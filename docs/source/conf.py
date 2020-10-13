@@ -36,7 +36,8 @@ author = 'Nicholas Geneva'
 
 # The full version, including alpha/beta/rc tags
 release = '0.0.1'
-
+# Main file
+master_doc = 'index'
 
 # -- General configuration ---------------------------------------------------
 

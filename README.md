@@ -1,10 +1,10 @@
 # Transformer PhysX
-[![CircleCI]()]() [![Website](https://img.shields.io/website?url=https%3A%2F%2Fzabaras.github.io%2Ftransformer-physx%2F)](https://zabaras.github.io/transformer-physx/) ![liscense](https://img.shields.io/github/license/zabaras/transformer-physx)
+[![CircleCI]()]() [![Documentation Status](https://readthedocs.org/projects/transformer-physx/badge/?version=latest)](https://transformer-physx.readthedocs.io/en/latest/?badge=latest) [![Website](https://img.shields.io/website?url=https%3A%2F%2Fzabaras.github.io%2Ftransformer-physx%2F)](https://zabaras.github.io/transformer-physx/) ![liscense](https://img.shields.io/github/license/zabaras/transformer-physx)
 
 Transformers for modeling and analysis of physical systems.
 
 - [Website](https://zabaras.github.io/transformer-physx/)
-- [Documentation]()
+- [Documentation](https://transformer-physx.readthedocs.io)
 - [Getting Started]() (Coming Soon)
 - [Data]() (Coming Soon)
 
