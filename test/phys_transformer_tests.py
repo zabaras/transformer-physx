@@ -1,7 +1,7 @@
 import sys
-sys.path.append('../src')
 from dataclasses import dataclass
-from trphysx.transformer.attention import Attention
+sys.path.append('../src/trphysx/transformer/') # Avoid loading the entire package
+from attention import Attention
 import torch
 import torch.nn as nn
 
