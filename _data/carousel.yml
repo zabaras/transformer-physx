@@ -1,0 +1,5 @@
+images: 
+  - image: ./assets/imgs/transformer.png
+    text: Standard transformer architectures from NLP
+  - image: ./assets/imgs/koopman.png
+    text: Koopman dynamic embeddings for physical context
