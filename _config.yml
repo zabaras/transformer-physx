@@ -51,7 +51,7 @@ navigation_header:
 - title: Github
   url: https://github.com/zabaras/transformer-physx
 - title: Documentation
-  url: https://transformer-physx.readthedocs.org/en/latest/
+  url: https://transformer-physx.readthedocs.io/en/latest
 - title: Data
   url: https://zenodo.org/
 
