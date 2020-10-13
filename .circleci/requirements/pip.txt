@@ -1,0 +1,6 @@
+# This file may be used to create an environment using:
+# $ pip install -r pip_requirements.txt
+# platform: linux-64
+
+tokenizers==0.8.1rc1
+transformers==3.0.2

@@ -1,0 +1,66 @@
+version: 2.1
+
+workflows:
+  main:
+    jobs:
+      - build_and_test:
+        filters:
+          branches:
+            only:
+              - master
+
+jobs:
+  build_and_test:
+
+    working_directory: ~/repo
+
+    docker:
+      - image: circleci/python:3.8.3
+
+    steps:
+      # Checkout repo
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - physx-dependencies-v3
+
+      # Set up conda environment 
+      # Need to figure out how to remove packages in cache that are not used
+      # conda install --revision 0
+      # conda clean --yes --all
+      - run:
+          name: install dependencies
+          command: | 
+            ls $HOME
+            if [ ! -d "/home/circleci/conda" ]; then
+                wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
+                /bin/bash Miniconda3-latest-Linux-x86_64.sh -b -p $HOME/conda
+                export PATH=$HOME/conda/bin:$PATH
+                conda install -y -c conda-forge -c pytorch --file ~/repo/.circleci/requirements/conda.txt cpuonly 
+                pip install -r ~/repo/.circleci/requirements/pip.txt
+            else
+                echo "Miniconda is already installed, continuing to build."
+                export PATH=$HOME/conda/bin:$PATH
+            fi
+
+            chmod u+x ~/repo/test/*.sh
+
+      - save_cache:
+          paths:
+            - /home/circleci/conda
+          key: physx-dependencies-v3
+
+      - run:
+          name: run tests
+          command: | 
+            export PATH=$HOME/conda/bin:$PATH
+            cd  ~/repo/test/
+
+            echo "Running tests"
+            ./circleci.sh
+
+      # - store_artifacts:
+      #     path: /tmp/artifacts
+

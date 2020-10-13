@@ -127,3 +127,29 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Data
+# *.txt
+*.lock
+*.hdf5
+*.h5
+*.csv
+*.npy
+
+# Output files
+*.json
+*.bin
+*.png
+*.pdf
+*.pth
+*.mp4
+
+# Misc folders
+outputs/
+pretrained/
+gmsh/
+.idea/
+
+.vscode/
+_site/
+.sass-cache/
