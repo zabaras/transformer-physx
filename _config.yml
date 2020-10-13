@@ -38,8 +38,8 @@ description: Transformers for modeling physical systems
 # email: 
 # description: >- # this means to ignore newlines until "baseurl:"
 #   Transformers for modeling physical systems.
-baseurl: "/phys-transformers" # the subpath of your site, e.g. /blog
-url: "https://nicholasgeneva.com/phys-transformers/" # the base hostname & protocol for your site, e.g. http://example.com
+baseurl: "/transformer-physx" # the subpath of your site, e.g. /blog
+url: "https://zabaras.github.io/transformer-physx/" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: NickGeneva
 github_username:  NickGeneva
 
