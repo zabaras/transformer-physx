@@ -3,7 +3,7 @@
 # platform: linux-64
 
 # Relative path to python files
-../src/trphysx
+src/trphysx
 
 sphinx-rtd-theme==0.5.0
 sphinxcontrib-applehelp==1.0.2
