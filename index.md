@@ -5,7 +5,7 @@ feature_text: |
   ## Transformer-PhysX
   #### Transformers for modeling physical systems
 ---
-Transformers are widely used in neural language processing due to their ability to model longer-term dependencies in text.
+Transformers are widely used in natural language processing due to their ability to model longer-term dependencies in text.
 Although these models achieve state-of-the-art performance for many language related tasks, their applicability outside of the neural language processing field has been minimal.
 This library is designed to deploy transformer models for the prediction of dynamical systems representative of physical phenomena.
 
