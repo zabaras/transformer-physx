@@ -43,6 +43,10 @@ var urlsToCache = [
     
   
     
+      '/assets/css/style.css',
+    
+  
+    
       '/sitemap.xml',
     
   

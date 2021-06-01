@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
-<loc>/updates/2021/05/31/transformer-physx-website.html</loc>
+<loc>http://localhost:4000/updates/2021/05/31/transformer-physx-website.html</loc>
 <lastmod>2021-05-31T00:00:00-04:00</lastmod>
 </url>
 <url>
-<loc>/403.html</loc>
+<loc>http://localhost:4000/403.html</loc>
 </url>
 <url>
-<loc>/category/</loc>
+<loc>http://localhost:4000/category/</loc>
 </url>
 <url>
-<loc>/</loc>
+<loc>http://localhost:4000/</loc>
 </url>
 <url>
-<loc>/tags/</loc>
+<loc>http://localhost:4000/tags/</loc>
 </url>
 <url>
-<loc>/category/updates.html</loc>
+<loc>http://localhost:4000/category/updates.html</loc>
 </url>
 </urlset>
