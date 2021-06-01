@@ -1,1 +1,23 @@
 version: 2.1
+
+workflows:
+  main:
+    jobs:
+      - build:
+        filters:
+          branches:
+            ignore:
+              - main
+              - gh-pages
+
+jobs:
+  build:
+
+    working_directory: ~/repo
+
+    docker:
+      - image: circleci/python:3.8.3
+
+    steps:
+      # Checkout repo
+      - checkout
