@@ -1,7 +1,7 @@
 title: "Transformer PhysX"
 description: "Transformers for modeling physical systems"
-url: "https://zabaras.github.io/transformer-physx/"
-baseurl: ""
+url: "https://zabaras.github.io/transformer-physx"
+baseurl: "https://zabaras.github.io/transformer-physx"
 author: "Nick Geneva"
 paginate: 5
 paginate_path: "/blog/page:num/"
