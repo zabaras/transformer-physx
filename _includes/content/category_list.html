@@ -48,7 +48,7 @@
         {% capture catename %}{{category|first}}{% endcapture %}
             {% if catename == catedata.name %}
                 {% if catedata.img != null %}
-                <div class="mdui-card-media mdui-ripple k-post-media lazy" data-original="{{catedata.img}}" style="background-image:url()">
+                <div class="mdui-card-media mdui-ripple k-post-media lazy" data-original="{{catedata.img| prepend: site.baseurl }}" style="background-image:url()">
                     <div class="mdui-card-media-covered mdui-card-media-covered-gradient">
                     <div class="mdui-card-primary">
                         <div class="mdui-card-primary-title"><a class="mdui-text-color-white-text" href="{{ "/category" | prepend: site.baseurl }}/{{category|first}}.html">{{category|first}} <span class="mdui-text-color-blue">({{category | last | size}})</span></a></div>
