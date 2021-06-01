@@ -1,0 +1,14 @@
+I"+<h2 id="defrosting">Defrosting</h2>
+
+<p>Over the past several months this project has been temporally frozen, at least the public repository, due to us deciding to wait to release the code after the paper was published (although the manuscript has been updated on <a href="https://arxiv.org/abs/2010.03957">ArXivs</a>).
+While this lasted longer than intended and with the paper still not fully published at the time of this being written, I have personally decided to proceed with the code roll out since this will take effort.
+Hence frequent updates should be arriving in the next several months.</p>
+
+<h2 id="github-pages">Github Pages</h2>
+
+<p>The Github pages site is intended to act as a separate location for posting updates, results and any discussions.
+The documentation will still be hosted on <a href="https://transformer-physx.readthedocs.io/en/latest/">Read the Docs webpage</a>.
+This allows for result images/movies to be stored on a seperate branch to keep the master branch of the repository as light weight as possible.</p>
+
+<p>Thats all for now!</p>
+:ET

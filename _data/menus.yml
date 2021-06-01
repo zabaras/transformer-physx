@@ -1,0 +1,10 @@
+- name: HOME
+  url: /
+  icon: home
+- name: CATEGORY
+  url: /category/
+  icon: "&#xe53b;"
+- name: TAGS
+  url: /tags/
+  icon: "&#xe893;"
+  switch: true

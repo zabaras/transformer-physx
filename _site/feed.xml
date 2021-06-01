@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.2.0">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2021-05-31T23:32:18-04:00</updated><id>/feed.xml</id><title type="html">Transformer PhysX</title><subtitle>Transformers for modeling physical systems</subtitle><author><name>Nick Geneva</name></author><entry><title type="html">Transformer PhysX Update 0</title><link href="/updates/2021/05/31/transformer-physx-website.html" rel="alternate" type="text/html" title="Transformer PhysX Update 0" /><published>2021-05-31T00:00:00-04:00</published><updated>2021-05-31T00:00:00-04:00</updated><id>/updates/2021/05/31/transformer-physx-website</id><content type="html" xml:base="/updates/2021/05/31/transformer-physx-website.html">&lt;h2 id=&quot;defrosting&quot;&gt;Defrosting&lt;/h2&gt;
+
+&lt;p&gt;Over the past several months this project has been temporally frozen, at least the public repository, due to us deciding to wait to release the code after the paper was published (although the manuscript has been updated on &lt;a href=&quot;https://arxiv.org/abs/2010.03957&quot;&gt;ArXivs&lt;/a&gt;).
+While this lasted longer than intended and with the paper still not fully published at the time of this being written, I have personally decided to proceed with the code roll out since this will take effort.
+Hence frequent updates should be arriving in the next several months.&lt;/p&gt;
+
+&lt;h2 id=&quot;github-pages&quot;&gt;Github Pages&lt;/h2&gt;
+
+&lt;p&gt;The Github pages site is intended to act as a separate location for posting updates, results and any discussions.
+The documentation will still be hosted on &lt;a href=&quot;https://transformer-physx.readthedocs.io/en/latest/&quot;&gt;Read the Docs webpage&lt;/a&gt;.
+This allows for result images/movies to be stored on a seperate branch to keep the master branch of the repository as light weight as possible.&lt;/p&gt;
+
+&lt;p&gt;Thats all for now!&lt;/p&gt;</content><author><name>Nick Geneva</name></author><category term="updates" /><category term="updates" /><summary type="html">Defrosting</summary></entry></feed>

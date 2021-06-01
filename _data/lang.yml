@@ -1,0 +1,86 @@
+zh-CN:
+   meng:
+      head_card: 
+          rss: "订阅"
+          sitemap: "站点地图"
+   editor: 
+      content: "内容"
+      frontmatter:
+         name: "Front Matter"
+         title: "标题"
+         date: "日期"
+         categories: "分类"
+         tags: "标签"
+         image: "图像"
+      preview: "预览"
+      download: "下载"
+   lastupdate: 
+      one: "本文最后更新于"
+      two: "天前，文中所描述的信息可能已发生改变，请谨慎使用。"
+   readtime: 
+      one: "阅读本文需要"
+      two: "分钟"
+   page:
+      search: "搜索"
+   post:
+      continue: "阅读全文"
+      qrcode: "二维码"
+      qrcodeContent: "在其它设备中阅读本文章"
+      comments_load_button: "阅读评论 「请确保 Disqus 可以正常加载」"
+      tags: "标签"
+   share:
+      share: "分享"
+      toWeibo: "分享到 微博"
+      toTwitter: "分享到 Twitter"
+      toFacebook: "分享到 Facebook"
+      toGoogleplus: "分享到 G+"
+      toLinkedin: "分享到 Linkedin"
+      toQq: "分享到 QQ"
+      toTelegram: "分享到 Telegram"
+   error:
+      main: "错误"
+      404x: "404未找到"
+      403x: "403资源不可用"
+en-US:
+   meng:
+      head_card: 
+          rss: "RSS"
+          sitemap: "Sitemap"
+   editor: 
+      content: "Content"
+      frontmatter:
+         name: "Front Matter"
+         title: "Title"
+         date: "Date"
+         categories: "Categories"
+         tags: "Tags"
+         image: "Image"
+      preview: "Preview"
+      download: "Download"
+   lastupdate: 
+      one: "This article was last updated"
+      two: "days ago. Please use caution."
+   readtime: 
+      one: "It takes"
+      two: "minutes to read this article."
+   page:
+      search: "Search"
+   post:
+      continue: "Read more"
+      qrcode: "QR Code"
+      qrcodeContent: "Read this article on other devices"
+      comments_load_button: "Read Comments"
+      tags: "Tags"
+   share:
+      share: "Share "
+      toWeibo: "Share to Weibo"
+      toTwitter: "Share to Twitter"
+      toFacebook: "Share to Facebook"
+      toGoogleplus: "Share to G+"
+      toLinkedin: "Share to Linkedin"
+      toQq: "Share to QQ"
+      toTelegram: "Share to Telegram"
+   error:
+      main: "Error"
+      404x: "404 Not found"
+      403x: "403 Resource not available"

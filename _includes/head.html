@@ -1,0 +1,94 @@
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="{{site.author}}">
+    <meta name="theme-color" content="{{ site.data.site.uiux.android_chrome_color }}">
+    {% if page.layout =="post" %}
+    <meta name="keywords" content="{% for pagetag in page.tags %}{{pagetag}} {% endfor %}">
+    {% else %}
+    <meta name="keywords" content="{{ site.data.site.head.keywords }}">
+    {% endif %}
+    {% if site.data.site.google_site_verification != "" %}
+    <meta name="google-site-verification" content="{{ site.data.site.google_site_verification }}">
+    {% endif %}
+    {% if site.data.site.uiux.meng == true%}
+    {% if site.data.meng.animation.switch == true %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+    {% endif %}
+    {% endif %}
+    <link rel="shortcut icon" href="{{ site.data.site.head.favicon }}">
+    <link rel="icon" sizes="192x192" href="{{ site.data.site.head.high_res_favicon }}">
+    <link rel="apple-touch-icon" href="{{ site.data.site.head.apple_touch_icon }}">
+    <title>{% if page.title %}{{ page.title }}{% else %}{{ site.title }}{% endif %}</title>
+    <meta name="description" content="{% if page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | truncate: 160 }}{% else %}{{ site.description }}{% endif %}">
+    <link rel="canonical" href="{{ page.url | replace:'index.html','' | prepend: site.baseurl | prepend: site.url }}">
+    <link rel="alternate" type="application/rss+xml" title="{{ site.title }}" href="{{ "/feed.xml" | prepend: site.baseurl | prepend: site.url }}">
+    <link rel="manifest" href="{{ "/manifest.json" | prepend: site.baseurl }}">
+
+    <script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/mdui/0.3.0/js/mdui.min.js"></script>
+    <script src="{{ "/assets/js/History.js" | prepend: site.baseurl }}"></script>
+
+    <link rel="preload" href="https://cdn.bootcss.com/mdui/0.3.0/css/mdui.min.css" as="style" onload="this.rel='stylesheet'">
+    <link rel="preload" href="{{ "/assets/css/global.css" | prepend: site.baseurl }}" as="style" onload="this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://cdn.bootcss.com/mdui/0.3.0/css/mdui.min.css"></noscript>
+    <noscript><link rel="stylesheet" href="{{ "/assets/css/global.css" | prepend: site.baseurl }}"></noscript>
+
+    {% include component/nprogress.html %}
+    <script>
+var defaultTitle = document.title;
+var imgzoom = false;
+var tagid;
+jQuery(document).ready(function($) {
+
+	var siteUrl = 'http://'+(document.location.hostname||document.location.host);
+    var disqusstatus = {
+        flag: false,
+    };
+	$(document).delegate('a[href^="/"][target!="_blank"],a[href^="'+siteUrl+'"]', "click", function(e) {
+        if(e.currentTarget.id.indexOf('tag_')===0){
+            tagid = e.currentTarget.id.replace(/tag_/,"");
+        }
+		e.preventDefault();
+		History.pushState({}, "", this.pathname);
+        NProgress.start();
+	});
+	History.Adapter.bind(window, 'statechange', function(){
+    var flag = 0;
+    var State = History.getState();
+		$.get(State.url, function(data){
+        $('.mdui-tooltip').remove();
+        $(".mdui-container").fadeOut(300,function(){
+          if (flag++>0)return;
+            const content = $(data).find('.content');
+            $('.container').html($(content));
+            document.title = data.match(/<title>(.*?)<\/title>/)[1];
+            defaultTitle = document.title;
+            NProgress.done();
+            $('#k-menus').html($(data).find('#k-menus').children());
+            $('#k-mobile-menus').html($(data).find('#k-mobile-menus').children());
+            $(".content").css('top','50px');
+            $(".content").css('position','relative');
+            $(".mdui-container").fadeIn();
+            $(".content").animate({top:'0px'});
+        });
+		});
+	});
+});
+    </script>
+     <script>
+  		  !function(a){"use strict";var b=function(b,c,d){function e(a){return h.body?a():void setTimeout(function(){e(a)})}function f(){i.addEventListener&&i.removeEventListener("load",f),i.media=d||"all"}var g,h=a.document,i=h.createElement("link");if(c)g=c;else{var j=(h.body||h.getElementsByTagName("head")[0]).childNodes;g=j[j.length-1]}var k=h.styleSheets;i.rel="stylesheet",i.href=b,i.media="only x",e(function(){g.parentNode.insertBefore(i,c?g:g.nextSibling)});var l=function(a){for(var b=i.href,c=k.length;c--;)if(k[c].href===b)return a();setTimeout(function(){l(a)})};return i.addEventListener&&i.addEventListener("load",f),i.onloadcssdefined=l,l(f),i};"undefined"!=typeof exports?exports.loadCSS=b:a.loadCSS=b}("undefined"!=typeof global?global:this);		  		  !function(a){"use strict";var b=function(b,c,d){function e(a){return h.body?a():void setTimeout(function(){e(a)})}function f(){i.addEventListener&&i.removeEventListener("load",f),i.media=d||"all"}var g,h=a.document,i=h.createElement("link");if(c)g=c;else{var j=(h.body||h.getElementsByTagName("head")[0]).childNodes;g=j[j.length-1]}var k=h.styleSheets;i.rel="stylesheet",i.href=b,i.media="only x",e(function(){g.parentNode.insertBefore(i,c?g:g.nextSibling)});var l=function(a){for(var b=i.href,c=k.length;c--;)if(k[c].href===b)return a();setTimeout(function(){l(a)})};return i.addEventListener&&i.addEventListener("load",f),i.onloadcssdefined=l,l(f),i};"undefined"!=typeof exports?exports.loadCSS=b:a.loadCSS=b}("undefined"!=typeof global?global:this);
+  		  !function(a){if(a.loadCSS){var b=loadCSS.relpreload={};if(b.support=function(){try{return a.document.createElement("link").relList.supports("preload")}catch(b){return!1}},b.poly=function(){for(var b=a.document.getElementsByTagName("link"),c=0;c<b.length;c++){var d=b[c];"preload"===d.rel&&"style"===d.getAttribute("as")&&(a.loadCSS(d.href,d,d.getAttribute("media")),d.rel=null)}},!b.support()){b.poly();var c=a.setInterval(b.poly,300);a.addEventListener&&a.addEventListener("load",function(){b.poly(),a.clearInterval(c)}),a.attachEvent&&a.attachEvent("onload",function(){a.clearInterval(c)})}}}(this);		  		  !function(a){if(a.loadCSS){var b=loadCSS.relpreload={};if(b.support=function(){try{return a.document.createElement("link").relList.supports("preload")}catch(b){return!1}},b.poly=function(){for(var b=a.document.getElementsByTagName("link"),c=0;c<b.length;c++){var d=b[c];"preload"===d.rel&&"style"===d.getAttribute("as")&&(a.loadCSS(d.href,d,d.getAttribute("media")),d.rel=null)}},!b.support()){b.poly();var c=a.setInterval(b.poly,300);a.addEventListener&&a.addEventListener("load",function(){b.poly(),a.clearInterval(c)}),a.attachEvent&&a.attachEvent("onload",function(){a.clearInterval(c)})}}}(this);
+    </script>
+{% if site.data.site.mathjax ==true %}
+<script type="text/x-mathjax-config;executed=true">
+MathJax.Hub.Config({tex2jax:{processEscapes: true, inlineMath: [ ['$','$'], ["\\(","\\)"] ], skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']}});
+MathJax.Hub.Config({TeX:{extensions: ["cancel.js", "enclose.js"],
+Macros:{a:"\\alpha",b:"\\beta",c:"\\chi",d:"\\delta",e:"\\epsilon",f:"\\phi",g:"\\gamma",h:"\\eta",i:"\\iota",j:"\\varphi",k:"\\kappa",l:"\\lambda",m:"\\mu",n:"\\nu",o:"\\omicron",p:"\\pi",q:"\\theta",r:"\\rho",s:"\\sigma",t:"\\tau",u:"\\upsilon",v:"\\varpi",w:"\\omega",x:"\\xi",y:"\\psi",z:"\\zeta",D:"\\Delta",F:"\\Phi",G:"\\Gamma",J:"\\vartheta",L:"\\Lambda",P:"\\Pi",Q:"\\Theta",S:"\\Sigma",U:"\\Upsilon",V:"\\varsigma",W:"\\Omega",X:"\\Xi",Y:"\\Psi",ve:"\\varepsilon",vk:"\\varkappa",vq:"\\vartheta",vp:"\\varpi",vr:"\\varrho",vs:"\\varsigma",vf:"\\varphi",alg:"\\begin{align}", ealg:"\\end{align}",bmat:"\\begin{bmatrix}", Bmat:"\\begin{Bmatrix}", pmat:"\\begin{pmatrix}", Pmat:"\\begin{Pmatrix}", vmat:"\\begin{vmatrix}", Vmat:"\\begin{Vmatrix}",ebmat:"\\end{bmatrix}", eBmat:"\\end{Bmatrix}",  epmat:"\\end{pmatrix}",  ePmat:"\\end{Pmatrix}",  evmat:"\\end{vmatrix}",  eVmat:"\\end{Vmatrix}",AA:"\\unicode{x212B}", Sum:"\\sum\\limits", abs:['\\lvert #1\\rvert',1], rmd:['\\mathop{\\mathrm{d}#1}',1],bi:['\\boldsymbol{#1}', 1], obar:['0\\!\\!\\!\\raise{.05em}{-}'],opar:['\\frac{\\partial #1}{\\partial #2}', 2], oppar:['\\frac{\\partial^2 #1}{\\partial #2^2}', 2]}}});
+MathJax.Hub.Queue(function(){
+var all=MathJax.Hub.getAllJax(),i;for(i=0;i<all.length;i+=1){all[i].SourceElement().parentNode.className+=' has-jax';}});
+</script>
+<script src="//cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-AMS_CHTML"></script>
+{% endif %}
+</head>

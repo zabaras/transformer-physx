@@ -1,0 +1,26 @@
+{% if site.data.site.lang == null or site.data.site.lang == "" %}
+{% assign lang = site.data.lang.en-US %}
+{% else %}
+{% assign lang = site.data.lang[site.data.site.lang] %}
+{% endif %}
+<style>
+#k-qrcode{
+    padding-bottom: 0px;
+    width: 215px;
+}
+</style>
+    <button class="mdui-btn mdui-btn-icon" mdui-tooltip="{content: '{{lang.post.qrcode }}', delay: 100}" mdui-menu="{target: '#k-qrcode',align:'right',covered:false}"><i class="mdui-icon material-icons">devices other</i></button>
+    <ul  class="mdui-menu mdui-menu-cascade" id="k-qrcode">
+        <li class="mdui-menu-item">
+            <a class="mdui-text-center" href="javascript:;" class="mdui-ripple">{{lang.post.qrcodeContent}}</a>
+        </li>
+        {% if  site.data.site.lang == 'zh-CN' %}
+        <li class="mdui-menu-item">
+            <img class="mdui-center" src="https://api.imjad.cn/qrcode/?size=210&&text={{page.url | absolute_url |url_encode}}" alt="">
+        </li>
+        {% else %}
+        <li class="mdui-menu-item">
+            <img class="mdui-center" src="https://chart.googleapis.com/chart?chs=210x210&cht=qr&chl={{page.url | absolute_url |url_encode}}" alt="">
+        </li>
+        {% endif %}
+    </ul>

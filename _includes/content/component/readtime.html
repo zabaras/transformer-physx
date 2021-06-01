@@ -1,0 +1,27 @@
+{% if site.data.site.lang == null or site.data.site.lang == "" %}
+{% assign lang = site.data.lang.en-US %}
+{% else %}
+{% assign lang = site.data.lang[site.data.site.lang] %}
+{% endif %}
+<style>
+.k-readtime{
+    color: #000000;
+    background: #c0ffee;
+    border-left: 5px solid #00ffd8;
+    cursor: default;
+    text-transform: none;
+    text-overflow: ellipsis;
+}
+.k-readtime:hover{
+    background: #c0ffee;
+}
+.k-readtime:active{
+    background: #c0ffee !important;
+}
+</style>
+{% assign words = content | strip_html | strip_newlines | size %}
+{% if words < 360 %}
+<a class="mdui-btn mdui-btn-block k-readtime"  href="javascript:;">{{lang.readtime.one}} 1 {{lang.readtime.two}}</a>
+{% else %}
+<a class="mdui-btn mdui-btn-block k-readtime"  href="javascript:;">{{lang.readtime.one}} {{ content | strip_html | strip_newlines | size | divided_by:360 | round}} {{lang.readtime.two}}</a>
+{% endif %}
