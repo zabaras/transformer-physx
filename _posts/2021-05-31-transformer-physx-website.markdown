@@ -4,7 +4,7 @@ title:  Transformer PhysX Update 0
 date:   2021-05-31 12:00:00 +0800
 categories: updates
 tags: updates
-img: /assets/images/posts/post_1.jpg
+img: {{site.baseurl}}/assets/images/posts/post_1.jpg
 author: nick
 describe: Update and gallery website for Transformer PhysX repository.
 ---

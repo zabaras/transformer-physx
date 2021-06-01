@@ -1,2 +1,2 @@
 - name: updates
-  img: "/assets/images/updates.jpg"
+  img: "{{site.baseurl}}/assets/images/updates.jpg"
