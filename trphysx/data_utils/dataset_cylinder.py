@@ -43,7 +43,7 @@ class CylinderDataset(PhysicalDataset):
             for i in range(0, data_series.size(0) - self.block_size + 1, self.stride):  # Truncate in block of block_size
                 data_series0 = embedded_series[i: i + self.block_size]  # .repeat(1, 4)
                 self.examples.append(data_series0)
-                self.position_ids.append(torch.arange(0, self.block_size, dtype=torch.long)+i)
+                # self.position_ids.append(torch.arange(0, self.block_size, dtype=torch.long)+i)
                 if save_states:
                     self.states.append(data_series[i: i + self.block_size].cpu())
             samples = samples + 1
@@ -88,4 +88,4 @@ class CylinderPredictDataset(CylinderDataset):
         return out.view([-1] + self.embedder.input_dims)
 
     def __getitem__(self, i) -> torch.Tensor:
-        return {'input': self.examples[i], 'targets': self.states[i], 'positions': self.position_ids[i]}
+        return {'inputs_embeds': self.examples[i][:1], 'targets': self.states[i]}

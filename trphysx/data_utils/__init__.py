@@ -5,4 +5,4 @@ from .dataset_auto import AutoDataset, AutoPredictionDataset
 from . import dataset_cylinder
 from . import dataset_lorenz
 from . import dataset_grayscott
-from . import dataset_phys
+from .dataset_phys import PhysicalDataset

@@ -31,13 +31,28 @@ class Viz(object):
         Args:
             y_pred (torch.Tensor): prediction tensor
             y_target (torch.Tensor): target tensor
-            plot_dir (Optional[str], optional): Firectory to save plot at. Defaults to None.
+            plot_dir (Optional[str], optional): Directory to save plot at. Defaults to None.
             **kwargs: Additional keyword arguments.
 
         Raises:
             NotImplementedError: If function has not been overridden by a child dataset class.
         """
         raise NotImplementedError("plotPrediction not initialized by child class.")
+
+    @abstractmethod
+    def plotEmbeddingPrediction(self, y_pred:torch.Tensor, y_target:torch.Tensor, plot_dir:Optional[str] = None, **kwargs):
+        """Plots model prediction and target values during the embedding training
+
+        Args:
+            y_pred (torch.Tensor): mini-batch of prediction tensor
+            y_target (torch.Tensor): mini-batch target tensor
+            plot_dir (Optional[str], optional): Directory to save plot at. Defaults to None.
+            **kwargs: Additional keyword arguments.
+
+        Raises:
+            NotImplementedError: If function has not been overridden by a child dataset class.
+        """
+        raise NotImplementedError("plotEmbeddingPrediction not initialized by child class.")
 
     def saveFigure(self, plot_dir:Optional[str] = None, file_name:str='plot', savepng=True, savepdf=False):
         """Saves active matplot lib figure to file

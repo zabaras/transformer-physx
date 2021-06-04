@@ -4,21 +4,18 @@ sys.path.append("../")
 from typing import Optional, Dict
 import torch
 from torch import nn
-from .phys_transformer import PhysformerBase, PhysformerModel
+from .phys_transformer_base import PhysformerBase
 from ..embedding.embedding_model import EmbeddingModel
-from transformers.file_utils import add_start_docstrings
 
 logger = logging.getLogger(__name__)
 
-class PhysformerTrainer(PhysformerBase):
+class PhysformerTrain(PhysformerBase):
     """Model head for training the physics transformer base.
     """
-    def __init__(self, config, embedding_model :Optional[EmbeddingModel] = None, model_name :Optional[str] = None):
+    def __init__(self, config, transformer_model :Optional[PhysformerBase] = None):
         super().__init__(config)
-        self.transformer = PhysformerModel(config, model_name)
+        self.transformer = transformer_model
         self.transformer.apply(self._init_weights)
-
-        self.embeding_model = embedding_model
 
     def forward(
             self,
@@ -51,9 +48,6 @@ class PhysformerTrainer(PhysformerBase):
         if labels_embeds is not None:
             hidden_states = outputs[0]
 
-            # shift_hidden = self.embeding_model.recover(shift_hidden)
-            # shift_labels = self.embeding_model.recover(shift_labels)
-
             # Flatten the tokens
             loss_fct = nn.MSELoss()
             loss = loss_fct(hidden_states, labels_embeds)
@@ -83,17 +77,13 @@ class PhysformerTrainer(PhysformerBase):
         self.transformer.load_model(*args, **kwargs)
 
 
-logger = logging.getLogger(__name__)
-@add_start_docstrings(
-    
-)
-class PhysformerPredicter(PhysformerBase):
+class PhysformerPredict(PhysformerBase):
     """Model head for prediction/evaluation the physics transformer. Used with plotting.
     """
 
-    def __init__(self, config, embedding_model: Optional[EmbeddingModel] = None, model_name: Optional[str] = None):
+    def __init__(self, config, embedding_model: Optional[EmbeddingModel] = None, transformer_model :Optional[PhysformerBase] = None):
         super().__init__(config)
-        self.transformer = PhysformerModel(config, model_name)
+        self.transformer = transformer_model
         self.transformer.apply(self._init_weights)
 
         self.embedding_model = embedding_model

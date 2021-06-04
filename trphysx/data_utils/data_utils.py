@@ -22,18 +22,21 @@ class DataCollator:
 
     # Default collator
     def __call__(self, examples:List[Dict[str, torch.Tensor]]) -> Dict[str, torch.Tensor]:
-        inputs = self._tensorize_batch([example['input'] for example in examples])
+        # inputs = self._tensorize_batch([example['input'] for example in examples])
         # props = self._tensorize_batch([example['positions'] for example in examples])
         # if self.mlm:
             # inputs, labels = self.mask_tokens(batch)
             # return {"input_ids": inputs, "labels": labels}
         # else:
-        labels = inputs[:, 1:].clone().detach()
-        inputs = inputs[:, :-1]
+        # labels = inputs[:, 1:].clone().detach()
+        # inputs = inputs[:, :-1]
         # props = props[:, :-1]
 
-        # labels[labels == self.tokenizer.pad_token_id] = -100
-        return {"inputs_embeds": inputs, "labels_embeds": labels, 'position_ids': None}
+        training_data = {}
+        for key in examples[0].keys():
+            training_data[key] = self._tensorize_batch([example[key] for example in examples])
+
+        return training_data
 
     def _tensorize_batch(self, examples: List[torch.Tensor]) -> torch.Tensor:
         length_of_first = examples[0].size(0)
@@ -53,11 +56,14 @@ class EvalDataCollator:
     """
     # Default collator
     def __call__(self, examples:List[Dict[str, torch.Tensor]]) -> Dict[str, torch.Tensor]:
-        inputs = self._tensorize_batch([example['input'] for example in examples])
+        eval_data = {}
+        for key in examples[0].keys():
+            eval_data[key] = self._tensorize_batch([example[key] for example in examples])
+        # inputs = self._tensorize_batch([example['input'] for example in examples])
         # props = self._tensorize_batch([example['positions'] for example in examples])
-        targets = self._tensorize_batch([example['targets'] for example in examples])
+        # targets = self._tensorize_batch([example['targets'] for example in examples])
 
-        return {"inputs_embeds": inputs, "target_states": targets, 'position_ids': None}
+        return eval_data
 
     def _tensorize_batch(self, examples: List[torch.Tensor]) -> torch.Tensor:
         length_of_first = examples[0].size(0)

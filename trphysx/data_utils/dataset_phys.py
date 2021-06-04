@@ -45,15 +45,17 @@ class PhysicalDataset(Dataset):
         block_size: int,
         stride:int = 1,
         ndata:int = -1,
+        patch_size:int = 1, # Patch size, used for the vizgpt2 model
         save_states:bool = False, # Save physical states as well (used for testing)
         overwrite_cache:bool = False,
         cache_path:Optional[str] = None
     ):
         """Constructor method
         """
-        self.block_size = block_size + 1 # Add 1 because initial state is not predicted
+        self.block_size = block_size + patch_size # Add patch_size because initial state is not predicted
         self.stride = stride
         self.ndata = ndata
+        self.patch_size = patch_size
         assert os.path.isfile(file_path), 'Provided data file path does not exist!'
 
         directory, filename = os.path.split(file_path)
@@ -71,7 +73,7 @@ class PhysicalDataset(Dataset):
             if os.path.exists(cached_features_file) and not overwrite_cache:
                 start = time.time()
                 with open(cached_features_file, "rb") as handle:
-                    self.examples, self.position_ids, self.states = pickle.load(handle)
+                    self.examples, self.states = pickle.load(handle)
                 logger.info(
                     f"Loading features from cached file {cached_features_file} [took %.3f s]", time.time() - start)
 
@@ -79,7 +81,6 @@ class PhysicalDataset(Dataset):
                 logger.info(f"Creating features from dataset file at {directory}")
 
                 self.examples = []
-                self.position_ids = []
                 self.states = []
                 # Read file and embed data using embedding model
                 # TODO: Speed up the embedding process if possible
@@ -91,11 +92,10 @@ class PhysicalDataset(Dataset):
                 start = time.time()
                 os.makedirs(cache_path, exist_ok=True)
                 with open(cached_features_file, "wb") as handle:
-                    pickle.dump((self.examples, self.position_ids, self.states), handle, protocol=pickle.HIGHEST_PROTOCOL)
+                    pickle.dump((self.examples, self.states), handle, protocol=pickle.HIGHEST_PROTOCOL)
                 logger.info(
                     "Saving features into cached file %s [took %.3f s]", cached_features_file, time.time() - start
                 )
-                assert len(self.examples) == len(self.position_ids), 'Number of data examples and position_id arrays must be the same!'
 
     @abstractmethod
     def embed_data(self, h5_file: h5py.File, embedder: EmbeddingModel, save_states: bool = False):
@@ -118,4 +118,4 @@ class PhysicalDataset(Dataset):
         return len(self.examples)
 
     def __getitem__(self, i) -> Dict[str, torch.Tensor]:
-        return {'input': self.examples[i], 'positions': self.position_ids[i]}
+        return {'inputs_embeds': self.examples[i][:-1], 'labels_embeds': self.examples[i][1:]}
