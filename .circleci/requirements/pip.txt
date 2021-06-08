@@ -2,5 +2,4 @@
 # $ pip install -r pip_requirements.txt
 # platform: linux-64
 
-tokenizers==0.8.1rc1
-transformers==3.0.2
+scipy==1.5.0
