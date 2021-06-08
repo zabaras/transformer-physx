@@ -24,7 +24,7 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-          - physx-dependencies-v4
+          - physx-dependencies-v5
 
       # Set up conda environment 
       # Need to figure out how to remove packages in cache that are not used
