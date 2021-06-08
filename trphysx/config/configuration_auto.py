@@ -5,15 +5,13 @@ from collections import OrderedDict
 from .configuration_lorenz import LorenzConfig
 from .configuration_cylinder import CylinderConfig
 from .configuration_grayscott import GrayScottConfig
-from .configuration_reservoir import ReservoirConfig
 from .configuration_phys import PhysConfig
 
 CONFIG_MAPPING = OrderedDict(
     [
         ("lorenz", LorenzConfig),
         ("cylinder", CylinderConfig),
-        ("grayscott", GrayScottConfig),
-        ("reservoir", ReservoirConfig),
+        ("grayscott", GrayScottConfig)
     ]
 )
 CONFIG_NAME = "config-phys.json"
