@@ -3,7 +3,7 @@
 # platform: linux-64
 _libgcc_mutex=0.1=main
 
-pytorch=1.5.1
+pytorch=1.8.1
 h5py=2.10.0
 matplotlib=3.4.2
 pip=20.1.1
