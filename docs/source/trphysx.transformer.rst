@@ -1,9 +1,6 @@
 trphysx.transformer package
 ===========================
 
-Submodules
-----------
-
 trphysx.transformer.attention module
 ------------------------------------
 
@@ -28,29 +25,38 @@ trphysx.transformer.generate\_utils module
    :undoc-members:
    :show-inheritance:
 
-trphysx.transformer.phys\_transformer module
---------------------------------------------
+trphysx.transformer.phys\_transformer\_base module
+--------------------------------------------------
 
-.. automodule:: trphysx.transformer.phys_transformer
+.. automodule:: trphysx.transformer.phys_transformer_base
    :members:
    :undoc-members:
    :show-inheritance:
 
-trphysx.transformer.phys\_transformer\_heads module
----------------------------------------------------
+trphysx.transformer.phys\_transformer\_gpt2 module
+--------------------------------------------------
 
-.. automodule:: trphysx.transformer.phys_transformer_heads
+.. automodule:: trphysx.transformer.phys_transformer_gpt2
    :members:
    :undoc-members:
    :show-inheritance:
 
-trphysx.transformer.transformer\_block module
----------------------------------------------
+trphysx.transformer.phys\_transformer\_helpers module
+-----------------------------------------------------
 
-.. automodule:: trphysx.transformer.transformer_block
+.. automodule:: trphysx.transformer.phys_transformer_helpers
    :members:
    :undoc-members:
    :show-inheritance:
+
+trphysx.transformer.utils module
+--------------------------------
+
+.. automodule:: trphysx.transformer.utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 
 Module contents
 ---------------

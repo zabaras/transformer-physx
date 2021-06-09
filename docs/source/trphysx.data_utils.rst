@@ -1,9 +1,6 @@
 trphysx.data\_utils package
 ===========================
 
-Submodules
-----------
-
 trphysx.data\_utils.data\_utils module
 --------------------------------------
 
@@ -51,6 +48,7 @@ trphysx.data\_utils.dataset\_phys module
    :members:
    :undoc-members:
    :show-inheritance:
+
 
 Module contents
 ---------------

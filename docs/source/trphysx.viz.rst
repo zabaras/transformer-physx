@@ -1,9 +1,6 @@
 trphysx.viz package
 ===================
 
-Submodules
-----------
-
 trphysx.viz.viz\_auto module
 ----------------------------
 
@@ -43,6 +40,7 @@ trphysx.viz.viz\_model module
    :members:
    :undoc-members:
    :show-inheritance:
+
 
 Module contents
 ---------------

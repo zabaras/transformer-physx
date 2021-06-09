@@ -6,19 +6,30 @@
 Transformer-PhysX Documentation
 =============================================
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+Welcome to the Transformer-PhysX documentation. 
+Transformer-PhysX is an actively developed project for using transformer models to predict physical systems.
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Getting Started:
+
+   install
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Python API:
+
+   trphysx.config
    trphysx.data_utils
+   trphysx.embedding
    trphysx.transformer
+   trphysx.utils
    trphysx.viz
 
 
-Additional Information
-======================
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
+   :caption: Additional Information:
 
    contact
    liscense
