@@ -34,6 +34,7 @@ class HfArgumentParser(ArgumentParser):
 
     def __init__(self, dataclass_types: Union[DataClassType, Iterable[DataClassType]], **kwargs):
         """
+        
         Args:
             dataclass_types:
                 Dataclass type, or list of dataclass types for which we will "fill" instances with the parsed args.
@@ -103,6 +104,7 @@ class HfArgumentParser(ArgumentParser):
         Parse command-line args into instances of the specified dataclass types.
         This relies on argparse's `ArgumentParser.parse_known_args`. See the doc at:
         docs.python.org/3.7/library/argparse.html#argparse.ArgumentParser.parse_args
+
         Args:
             args:
                 List of strings to parse. The default is taken from sys.argv. (same as argparse.ArgumentParser)

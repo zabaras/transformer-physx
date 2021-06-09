@@ -45,13 +45,13 @@ master_doc = 'index'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    'sphinxcontrib.napoleon',
     "sphinx.ext.autodoc",
     "sphinx.ext.doctest",
     'sphinx.ext.todo',
     "sphinx_rtd_theme",
     "sphinx.ext.mathjax",
-    'sphinx.ext.ifconfig',
-    'sphinxcontrib.napoleon'
+    'sphinx.ext.ifconfig'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -79,3 +79,6 @@ html_static_path = []
 
 # Stop alphabetical ordering of functions
 autodoc_member_order = 'bysource'
+
+# Suppress various annoying warnings
+suppress_warnings = []

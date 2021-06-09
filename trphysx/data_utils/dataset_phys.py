@@ -29,7 +29,7 @@ class PhysicalDataset(Dataset):
     The caching of the dataset is based on the Hugging Face implementation.
 
     Args:
-        embedder (EmbeddingModel): Embedding neural network
+        embedder (:class:`trphysx.embedding.embedding_model.EmbeddingModel`): Embedding neural network
         file_path (str): Path to hdf5 raw data file
         block_size (int): Length of time-series blocks for training
         stride (int, optional): Stride interval to sample blocks from the raw time-series. Defaults to 1.
@@ -106,7 +106,7 @@ class PhysicalDataset(Dataset):
 
         Args:
             h5_file (h5py.File): HDF5 file object to read raw data from
-            embedder (EmbeddingModel): Embedding neural network
+            embedder (:class:`trphysx.embedding.embedding_model.EmbeddingModel`): Embedding neural network
             save_states (bool, optional): To save the physical states or not, should be True for validation and testing. Defaults to False.
 
         Raises:

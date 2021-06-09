@@ -26,7 +26,7 @@ class LorenzDataset(PhysicalDataset):
 
         Args:
             h5_file (h5py.File): HDF5 file object of Lorenz raw data
-            embedder (EmbeddingModel): Embedding neural network
+            embedder (:class:`trphysx.embedding.embedding_model.EmbeddingModel`): Embedding neural network
             save_states (bool, optional): To save the physical states or not, should be True for validation and testing. Defaults to False.
         """
         # Iterate through stored time-series
@@ -55,7 +55,7 @@ class LorenzPredictDataset(LorenzDataset):
     TODO: Use mix-in for recover and get item methods?
 
     Args:
-        embedder (EmbeddingModel): Embedding neural network
+        embedder (:class:`trphysx.embedding.embedding_model.EmbeddingModel`): Embedding neural network
         file_path (str): Path to hdf5 raw data file
         block_size (int): Length of time-series blocks for training
         stride (int, optional): Stride interval to sample blocks from the raw time-series. Defaults to 1.

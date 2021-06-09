@@ -40,12 +40,3 @@ trphysx.embedding.embedding\_model module
    :members:
    :undoc-members:
    :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: trphysx.embedding
-   :members:
-   :undoc-members:
-   :show-inheritance:

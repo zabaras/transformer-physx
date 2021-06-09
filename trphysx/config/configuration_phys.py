@@ -39,6 +39,7 @@ class PhysConfig(object):
         """
         Save a configuration object to the directory `save_directory`, so that it
         can be re-loaded using the :func:`~transformers.PretrainedConfig.from_pretrained` class method.
+
         Args:
             save_directory (:obj:`string`):
                 Directory where the configuration JSON file will be saved.
@@ -56,6 +57,7 @@ class PhysConfig(object):
     def from_dict(cls, config_dict: Dict, **kwargs) -> "PretrainedConfig":
         """
         Constructs a `Config` from a Python dictionary of parameters.
+
         Args:
             config_dict (:obj:`Dict[str, any]`):
                 Dictionary that will be used to instantiate the configuration object. Such a dictionary can be retrieved
@@ -63,6 +65,7 @@ class PhysConfig(object):
                 method.
             kwargs (:obj:`Dict[str, any]`):
                 Additional parameters from which to initialize the configuration object.
+
         Returns:
             :class:`PretrainedConfig`: An instance of a configuration object
         """
@@ -91,6 +94,7 @@ class PhysConfig(object):
     def to_dict(self):
         """
         Serializes this instance to a Python dictionary.
+
         Returns:
             :obj:`Dict[str, any]`: Dictionary of all the attributes that make up this configuration instance,
         """
@@ -102,6 +106,7 @@ class PhysConfig(object):
     def to_json_string(self, use_diff=True):
         """
         Serializes this instance to a JSON string.
+
         Args:
             use_diff (:obj:`bool`):
                 If set to True, only the difference between the config instance and the default PretrainedConfig() is serialized to JSON string.
@@ -117,6 +122,7 @@ class PhysConfig(object):
     def to_json_file(self, json_file_path, use_diff=True):
         """
         Save this instance to a json file.
+
         Args:
             json_file_path (:obj:`string`):
                 Path to the JSON file in which this configuration instance's parameters will be saved.
@@ -128,8 +134,8 @@ class PhysConfig(object):
 
     def update(self, config_dict: Dict):
         """
-        Updates attributes of this class
-        with attributes from `config_dict`.
+        Updates attributes of this class with attributes from `config_dict`.
+
         Args:
             :obj:`Dict[str, any]`: Dictionary of attributes that shall be updated for this class.
         """

@@ -44,7 +44,7 @@ class AutoDataset():
             AssertionError: If dataset_name is not a supported model type
 
         Returns:
-            (PhysicalDataset): Initialized data-set
+            :class:`trphysx.data_utils.dataset_phys.PhysicalDataset`: Initialized data-set
         """
         # First check if the model name is a pre-defined config
         if (dataset_name in DATASET_MAPPING.keys()):
@@ -89,7 +89,7 @@ class AutoPredictionDataset():
             AssertionError: If dataset_name is not a supported model type
 
         Returns:
-            (PhysicalDataset): Initialized data-set
+            :class:`trphysx.data_utils.dataset_phys.PhysicalDataset`: Initialized data-set
         """
         # First check if the model name is a pre-defined config
         if (dataset_name in PREDSET_MAPPING.keys()):
