@@ -31,7 +31,7 @@ Thanks for understanding.
 ### Contact
 Open an issue on the Github repository if you have any questions/concerns.
 
-### Contact
+### Citation
 Find this useful or like this work? Cite us with:
 
 ```latex
