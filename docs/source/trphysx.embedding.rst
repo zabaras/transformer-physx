@@ -1,6 +1,14 @@
 trphysx.embedding package
 =========================
 
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 1
+
+   trphysx.embedding.training
+
 trphysx.embedding.embedding\_auto module
 ----------------------------------------
 
