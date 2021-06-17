@@ -294,8 +294,6 @@ class GrayScottDataHandler(EmbeddingDataHandler):
 
             data = torch.stack([torch.Tensor(u), torch.Tensor(v)], dim=1)
 
-            # data = torch.roll(data, shifts=tuple(self.permute_idxs[i]), dims=(-3, -2, -1))
-
             return {'input_states': data}
 
     @dataclass
