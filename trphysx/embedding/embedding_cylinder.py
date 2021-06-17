@@ -12,7 +12,8 @@ import torch
 import torch.nn as nn
 import numpy as np
 from typing import List, Tuple
-from .embedding_model import EmbeddingModel
+from .embedding_model import EmbeddingModel, EmbeddingTrainingHead
+from trphysx.config.configuration_phys import PhysConfig
 from torch.autograd import Variable
 
 logger = logging.getLogger(__name__)
@@ -25,11 +26,11 @@ class CylinderEmbedding(EmbeddingModel):
     """Embedding Koopman model for the 2D flow around a cylinder system
 
     Args:
-        config (:class:`config.configuration_phys.PhysConfig`) Configuration class with transformer/embedding parameters
+        config (PhysConfig): Configuration class with transformer/embedding parameters
     """
     model_name = "embedding_cylinder"
 
-    def __init__(self, config) -> None:
+    def __init__(self, config: PhysConfig) -> None:
         """Constructor method
         """
         super().__init__(config)
@@ -201,7 +202,7 @@ class CylinderEmbedding(EmbeddingModel):
             requires_grad (bool, optional): If to return with gradient storage. Defaults to True
 
         Returns:
-            (torch.Tensor): Full Koopman operator tensor
+            (Tensor): Full Koopman operator tensor
         """
         if not requires_grad:
             return self.kMatrix.detach()
@@ -219,13 +220,13 @@ class CylinderEmbedding(EmbeddingModel):
     def koopmanDiag(self):
         return self.kMatrixDiag
 
-class CylinderEmbeddingTrainer(nn.Module):
+class CylinderEmbeddingTrainer(EmbeddingTrainingHead):
     """Training head for the Lorenz embedding model
 
     Args:
-        config (:class:`config.configuration_phys.PhysConfig`) Configuration class with transformer/embedding parameters
+        config (PhysConfig): Configuration class with transformer/embedding parameters
     """
-    def __init__(self, config) -> None:
+    def __init__(self, config: PhysConfig) -> None:
         """Constructor method
         """
         super().__init__()
@@ -277,16 +278,3 @@ class CylinderEmbeddingTrainer(nn.Module):
             g1_old = g1Pred
 
         return loss, loss_reconstruct
-
-    def save_model(self, *args, **kwargs):
-        """
-        Saves the embedding model
-        """
-        self.embedding_model.save_model(*args, **kwargs)
-
-
-    def load_model(self, *args, **kwargs):
-        """
-        Load the embedding model
-        """
-        self.embedding_model.load_model(*args, **kwargs)

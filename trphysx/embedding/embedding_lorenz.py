@@ -1,27 +1,36 @@
-'''
+"""
 =====
+Distributed by: Notre Dame SCAI Lab (MIT Liscense)
 - Associated publication:
-url: 
+url: https://arxiv.org/abs/2010.03957
 doi: 
-github: 
+github: https://github.com/zabaras/transformer-physx
 =====
-'''
+"""
+import logging
 import torch
 import torch.nn as nn
-import logging
 import numpy as np
-from .embedding_model import EmbeddingModel
+from typing import List, Tuple
+from .embedding_model import EmbeddingModel, EmbeddingTrainingHead
+from trphysx.config.configuration_phys import PhysConfig
 from torch.autograd import Variable
+
+logger = logging.getLogger(__name__)
+# Custom types
+Tensor = torch.Tensor
+TensorTuple = Tuple[torch.Tensor]
+FloatTuple = Tuple[float]
 
 class LorenzEmbedding(EmbeddingModel):
     """Embedding Koopman model for the Lorenz ODE system
 
     Args:
-        config (:class:`config.configuration_phys.PhysConfig`) Configuration class with transformer/embedding parameters
+        config (PhysConfig): Configuration class with transformer/embedding parameters
     """
     model_name = "embedding_lorenz"
 
-    def __init__(self, config):
+    def __init__(self, config: PhysConfig):
         """Constructor method
         """
         super().__init__(config)
@@ -42,11 +51,11 @@ class LorenzEmbedding(EmbeddingModel):
             nn.ReLU(),
             nn.Linear(hidden_states, config.state_dims[0])
         )
-        # Learned koopman operator
-        # Learns skew-symmetric matrix with a diagonal
+        # Learned Koopman operator
         self.obsdim = config.n_embd
         self.kMatrixDiag = nn.Parameter(torch.linspace(1, 0, config.n_embd))
 
+        # Off-diagonal indices
         xidx = []
         yidx = []
         for i in range(1, 3):
@@ -56,22 +65,23 @@ class LorenzEmbedding(EmbeddingModel):
         self.xidx = torch.LongTensor(np.concatenate(xidx))
         self.yidx = torch.LongTensor(np.concatenate(yidx))
         self.kMatrixUT = nn.Parameter(0.1*torch.rand(self.xidx.size(0)))
+
         # Normalization occurs inside the model
         self.register_buffer('mu', torch.tensor([0., 0., 0.]))
         self.register_buffer('std', torch.tensor([1., 1., 1.]))
-        print('Number of embedding parameters: {}'.format( super().num_parameters ))
+        logger.info('Number of embedding parameters: {}'.format( super().num_parameters ))
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> TensorTuple:
         """Forward pass
 
         Args:
-            x (torch.Tensor): [B, 3] Input feature tensor
+            x (Tensor): [B, 3] Input feature tensor
 
         Returns:
-            (tuple): tuple containing:
+            (TensorTuple): Tuple containing:
 
-                | (torch.Tensor): [B, config.n_embd] Koopman observables
-                | (torch.Tensor): [B, 3] Recovered feature tensor
+                | (Tensor): [B, config.n_embd] Koopman observables
+                | (Tensor): [B, 3] Recovered feature tensor
         """
         # Encode
         x = self._normalize(x)
@@ -81,40 +91,40 @@ class LorenzEmbedding(EmbeddingModel):
         xhat = self._unnormalize(out)
         return g, xhat
 
-    def embed(self, x):
+    def embed(self, x: Tensor) -> Tensor:
         """Embeds tensor of state variables to Koopman observables
 
         Args:
-            x (torch.Tensor): [B, 3] input feature tensor
+            x (Tensor): [B, 3] Input feature tensor
 
         Returns:
-            (torch.Tensor): [B, config.n_embd] Koopman observables
+            (Tensor): [B, config.n_embd] Koopman observables
         """
         x = self._normalize(x)
         g = self.observableNet(x)
         return g
 
-    def recover(self, g):
+    def recover(self, g: Tensor) -> Tensor:
         """Recovers feature tensor from Koopman observables
 
         Args:
-            g (torch.Tensor): [B, config.n_embd] Koopman observables
+            g (Tensor): [B, config.n_embd] Koopman observables
 
         Returns:
-            (torch.Tensor): [B, 3] Physical feature tensor
+            (Tensor): [B, #] Physical feature tensor
         """
         out = self.recoveryNet(g)
         x = self._unnormalize(out)
         return x
 
-    def koopmanOperation(self, g):
-        """Applies the learned koopman operator on the given observables.
+    def koopmanOperation(self, g: Tensor) -> Tensor:
+        """Applies the learned Koopman operator on the given observables
 
         Args:
-            (torch.Tensor): [B, config.n_embd] Koopman observables
+            g (Tensor): [B, config.n_embd] Koopman observables
 
         Returns:
-            (torch.Tensor): [B, config.n_embd] Koopman observables at the next time-step
+            (Tensor): [B, config.n_embd] Koopman observables at the next time-step
         """
         # Koopman operator
         kMatrix = Variable(torch.zeros(self.obsdim, self.obsdim)).to(self.kMatrixUT.device)
@@ -132,11 +142,14 @@ class LorenzEmbedding(EmbeddingModel):
         return gnext.squeeze(-1) # Squeeze empty dim from bmm
 
     @property
-    def koopmanOperator(self, requires_grad=True):
+    def koopmanOperator(self, requires_grad: bool =True) -> Tensor:
         """Current Koopman operator
 
         Args:
-            requires_grad (bool, optional): if to return with gradient storage, defaults to True
+            requires_grad (bool, optional): If to return with gradient storage. Defaults to True
+
+        Returns:
+            (Tensor): Full Koopman operator tensor
         """
         if not requires_grad:
             return self.kMatrix.detach()
@@ -153,39 +166,47 @@ class LorenzEmbedding(EmbeddingModel):
     def koopmanDiag(self):
         return self.kMatrixDiag
 
-class LorenzEmbeddingTrainer(nn.Module):
-    """Training head for the Lorenz embedding model for parallel training
+class LorenzEmbeddingTrainer(EmbeddingTrainingHead):
+    """Training head for the Lorenz embedding model
 
     Args:
-        config (:class:`config.configuration_phys.PhysConfig`) Configuration class with transformer/embedding parameters
+        config (PhysConfig): Configuration class with transformer/embedding parameters
     """
-    def __init__(self, config):
+    def __init__(self, config: PhysConfig):
         """Constructor method
         """
         super().__init__()
         self.embedding_model = LorenzEmbedding(config)
 
-    def forward(self, input_states=None):
-        '''
-        Trains model for a single epoch
-        '''
+    def forward(self, states: Tensor) -> FloatTuple:
+        """Trains model for a single epoch
+
+        Args:
+            states (Tensor): [B, T, 3] Time-series feature tensor
+
+        Returns:
+            FloatTuple: Tuple containing:
+            
+                | (float): Koopman based loss of current epoch
+                | (float): Reconstruction loss
+        """
         self.embedding_model.train()
         device = self.embedding_model.devices[0]
 
         loss_reconstruct = 0
         mseLoss = nn.MSELoss()
 
-        xin0 = input_states[:,0].to(device) # Time-step
+        xin0 = states[:,0].to(device) # Time-step
 
-        # Model forward for both time-steps
+        # Model forward for initial time-step
         g0, xRec0 = self.embedding_model(xin0)
         loss = (1e4)*mseLoss(xin0, xRec0)
         loss_reconstruct = loss_reconstruct + mseLoss(xin0, xRec0).detach()
 
         g1_old = g0
-        # Koopman transform
-        for t0 in range(1, input_states.shape[1]):
-            xin0 = input_states[:,t0,:].to(device) # Next time-step
+        # Loop through time-series
+        for t0 in range(1, states.shape[1]):
+            xin0 = states[:,t0,:].to(device) # Next time-step
             _, xRec1 = self.embedding_model(xin0)
 
             g1Pred = self.embedding_model.koopmanOperation(g1_old)
@@ -198,16 +219,3 @@ class LorenzEmbeddingTrainer(nn.Module):
             g1_old = g1Pred
 
         return loss, loss_reconstruct
-
-    def save_model(self, *args, **kwargs):
-        """
-        Saves the embedding model
-        """
-        self.embedding_model.save_model(*args, **kwargs)
-
-
-    def load_model(self, *args, **kwargs):
-        """
-        Load the embedding model
-        """
-        self.embedding_model.load_model(*args, **kwargs)

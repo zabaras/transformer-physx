@@ -10,11 +10,14 @@ github: https://github.com/zabaras/transformer-physx
 import os
 import json
 import logging
+# from trphysx.embedding.embedding_model import EmbeddingModel, EmbeddingTrainer
 from typing import Optional
 from collections import OrderedDict
+from .embedding_model import EmbeddingModel, EmbeddingTrainingHead
 from .embedding_lorenz import LorenzEmbedding, LorenzEmbeddingTrainer
 from .embedding_cylinder import CylinderEmbedding, CylinderEmbeddingTrainer
 from .embedding_grayscott import GrayScottEmbedding, GrayScottEmbeddingTrainer
+from trphysx.config.configuration_phys import PhysConfig
 
 MODEL_MAPPING = OrderedDict(
     [
@@ -46,7 +49,7 @@ class AutoEmbeddingModel:
         )
 
     @classmethod
-    def init_model(cls, model_name:str, config):
+    def init_model(cls, model_name: str, config: PhysConfig) -> EmbeddingModel:
         """Initialize embedding model
         Currently supports: "lorenz", "cylinder", "grayscott"
 
@@ -72,7 +75,7 @@ class AutoEmbeddingModel:
         return model
     
     @classmethod
-    def init_trainer(cls, model_name:str, config):
+    def init_trainer(cls, model_name: str, config: PhysConfig) -> EmbeddingTrainingHead:
         """Initialize embedding model with a training head
         Currently supports: "lorenz", "cylinder", "grayscott"
 
@@ -84,7 +87,7 @@ class AutoEmbeddingModel:
             AssertionError: If model_name is not a supported trainer model types
 
         Returns:
-            (EmbeddingModel): Initialized embedding model trainer
+            (EmbeddingTrainer): Initialized embedding model trainer
         """
         # First check if the model name is a pre-defined config
         if(model_name in TRAINING_MAPPING.keys()):
@@ -98,7 +101,7 @@ class AutoEmbeddingModel:
         return model
 
     @classmethod
-    def load_model(cls, model_name, config, file_or_path_directory:Optional[str]=None, epoch:int=0):
+    def load_model(cls, model_name: str, config: PhysConfig, file_or_path_directory: Optional[str]=None, epoch: int=0) -> EmbeddingModel:
         """Initialize and load embedding model from memory
         Currently supports: "lorenz", "cylinder", "grayscott"
 

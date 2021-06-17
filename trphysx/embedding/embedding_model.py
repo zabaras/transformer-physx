@@ -1,16 +1,18 @@
-'''
+"""
 =====
+Distributed by: Notre Dame SCAI Lab (MIT Liscense)
 - Associated publication:
-url: 
+url: https://arxiv.org/abs/2010.03957
 doi: 
-github: 
+github: https://github.com/zabaras/transformer-physx
 =====
-'''
+"""
 import os
 import logging
 import torch
 import torch.nn as nn
 from abc import abstractmethod
+from trphysx.config.configuration_phys import PhysConfig
 
 logger = logging.getLogger(__name__)
 
@@ -19,12 +21,12 @@ class EmbeddingModel(nn.Module):
     the physical systems states into a vector representation
 
     Args:
-        config (:class:`config.configuration_phys.PhysConfig`) Configuration class with transformer/embedding parameters
+        config (PhysConfig): Configuration class with transformer/embedding parameters
     """
     model_name: str = "embedding_model"
 
     # Init config
-    def __init__(self, config):
+    def __init__(self, config: PhysConfig):
         super().__init__()
         self.config = config
 
@@ -77,7 +79,7 @@ class EmbeddingModel(nn.Module):
                 devices.append(buffer.device)
         return devices
         
-    def save_model(self, save_directory: str, epoch: int = 0):
+    def save_model(self, save_directory: str, epoch: int = 0) -> None:
         """Saves embedding model to the specified directory.
 
         Args:
@@ -96,7 +98,7 @@ class EmbeddingModel(nn.Module):
         # Save pytorch model to file
         torch.save(self.state_dict(), output_model_file)
 
-    def load_model(self, file_or_path_directory: str, epoch: int = 0):
+    def load_model(self, file_or_path_directory: str, epoch: int = 0) -> None:
         """Load a embedding model from the specified file or path
         
         Args:
@@ -117,11 +119,8 @@ class EmbeddingModel(nn.Module):
             raise FileNotFoundError("Provided path or file ({}) does not exist".format(file_or_path_directory))
 
 
-class EmbeddingTrainer(nn.Module):
-    """Parent class for trainer class for embedding models
-
-    Args:
-        config (:class:`config.configuration_phys.PhysConfig`) Configuration class with transformer/embedding parameters
+class EmbeddingTrainingHead(nn.Module):
+    """Parent class for training head for embedding models
     """
 
     @abstractmethod

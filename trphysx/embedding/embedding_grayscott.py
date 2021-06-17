@@ -12,7 +12,8 @@ import torch
 import torch.nn as nn
 import numpy as np
 from typing import List, Tuple
-from .embedding_model import EmbeddingModel
+from .embedding_model import EmbeddingModel, EmbeddingTrainingHead
+from trphysx.config.configuration_phys import PhysConfig
 from torch.autograd import Variable
 
 logger = logging.getLogger(__name__)
@@ -25,7 +26,7 @@ class GrayScottEmbedding(EmbeddingModel):
     """Embedding Koopman model for the 3D Gray-Scott system
 
     Args:
-        config (:class:`config.configuration_phys.PhysConfig`): Configuration class with transformer/embedding parameters
+        config (PhysConfig): Configuration class with transformer/embedding parameters
 
     Note:
         For more information on the Gray-Scott model see "Complex Patterns in a Simple System" by John E. Pearson;
@@ -33,7 +34,7 @@ class GrayScottEmbedding(EmbeddingModel):
     """
     model_name = "embedding_grayscott"
 
-    def __init__(self, config) -> None:
+    def __init__(self, config: PhysConfig) -> None:
         """Constructor method
         """
         super().__init__(config)
@@ -113,13 +114,13 @@ class GrayScottEmbedding(EmbeddingModel):
         # Normalization occurs inside the model
         self.register_buffer('mu', torch.tensor(0.))
         self.register_buffer('std', torch.tensor(1.))
-        print('Number of embedding parameters: {}'.format(super().num_parameters))
+        logger.info('Number of embedding parameters: {}'.format(super().num_parameters))
 
     def forward(self, x: Tensor) -> TensorTuple:
         """Forward pass
 
         Args:
-            x (torch.Tensor): [B, 2, H, W, D] Input feature tensor
+            x (Tensor): [B, 2, H, W, D] Input feature tensor
 
         Returns:
             (TensorTuple): Tuple containing:
@@ -190,14 +191,14 @@ class GrayScottEmbedding(EmbeddingModel):
         return gnext.squeeze(-1) # Squeeze empty dim from bmm
 
     @property
-    def koopmanOperator(self, requires_grad=True):
+    def koopmanOperator(self, requires_grad: bool =True) -> Tensor:
         """Current Koopman operator
 
         Args:
             requires_grad (bool, optional): If to return with gradient storage. Defaults to True
 
         Returns:
-            (torch.Tensor): Full Koopman operator tensor
+            (Tensor): Full Koopman operator tensor
         """
         if not requires_grad:
             return self.kMatrix.detach()
@@ -216,13 +217,13 @@ class GrayScottEmbedding(EmbeddingModel):
         return self.std.unsqueeze(0).unsqueeze(-1).unsqueeze(-1).unsqueeze(-1) * x + self.mu.unsqueeze(0).unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
 
 
-class GrayScottEmbeddingTrainer(nn.Module):
+class GrayScottEmbeddingTrainer(EmbeddingTrainingHead):
     """Training head for the Gray-Scott embedding model for parallel training
 
     Args:
-        config (:class:`config.configuration_phys.PhysConfig`) Configuration class with transformer/embedding parameters
+        config (PhysConfig): Configuration class with transformer/embedding parameters
     """
-    def __init__(self, config):
+    def __init__(self, config: PhysConfig):
         """Constructor method
         """
         super().__init__()
@@ -261,7 +262,7 @@ class GrayScottEmbeddingTrainer(nn.Module):
             # Apply Koopman transform
             g1Pred = self.embedding_model.koopmanOperation(g1_old)
             xgRec1 = self.embedding_model.recover(g1Pred)
-
+            # Loss function
             loss = loss + mseLoss(xgRec1, xin0) + (1e4)*mseLoss(xRec1, xin0) + (1e3)*mseLoss(g2, g3) \
                 + (1e-3)*torch.sum(torch.pow(self.embedding_model.koopmanOperator, 2))
 
@@ -269,19 +270,6 @@ class GrayScottEmbeddingTrainer(nn.Module):
             g1_old = g1Pred
 
         return loss, loss_reconstruct
-
-    def save_model(self, *args, **kwargs):
-        """
-        Saves the embedding model
-        """
-        self.embedding_model.save_model(*args, **kwargs)
-
-
-    def load_model(self, *args, **kwargs):
-        """
-        Load the embedding model
-        """
-        self.embedding_model.load_model(*args, **kwargs)
 
 # import sys
 # sys.path.append('..')
