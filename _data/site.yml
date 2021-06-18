@@ -1,7 +1,7 @@
 head:
-   favicon: "" #  the favicon
-   high_res_favicon: "" #  the favicon using high quality format
-   apple_touch_icon: "" # the iOS Home button icon
+   favicon: "/assets/images/favicon/favicon.ico" #  the favicon
+   high_res_favicon: "/assets/images/favicon/android-chrome-512x512.png" #  the favicon using high quality format
+   apple_touch_icon: "/assets/images/favicon/apple-touch-icon.png" # the iOS Home button icon
    keywords: "blog jekyll mdui theme" #  the site keywords
 
 uiux:
