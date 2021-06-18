@@ -218,7 +218,7 @@ class GrayScottEmbedding(EmbeddingModel):
 
 
 class GrayScottEmbeddingTrainer(EmbeddingTrainingHead):
-    """Training head for the Gray-Scott embedding model for parallel training
+    """Training head for the Gray-Scott embedding model
 
     Args:
         config (PhysConfig): Configuration class with transformer/embedding parameters

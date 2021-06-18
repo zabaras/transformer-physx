@@ -50,7 +50,7 @@ class AutoEmbeddingModel:
 
     @classmethod
     def init_model(cls, model_name: str, config: PhysConfig) -> EmbeddingModel:
-        """Initialize embedding model
+        """Initialize embedding model.
         Currently supports: "lorenz", "cylinder", "grayscott"
 
         Args:
@@ -76,7 +76,7 @@ class AutoEmbeddingModel:
     
     @classmethod
     def init_trainer(cls, model_name: str, config: PhysConfig) -> EmbeddingTrainingHead:
-        """Initialize embedding model with a training head
+        """Initialize embedding model with a training head.
         Currently supports: "lorenz", "cylinder", "grayscott"
 
         Args:
@@ -102,7 +102,7 @@ class AutoEmbeddingModel:
 
     @classmethod
     def load_model(cls, model_name: str, config: PhysConfig, file_or_path_directory: Optional[str]=None, epoch: int=0) -> EmbeddingModel:
-        """Initialize and load embedding model from memory
+        """Initialize and load embedding model from memory.
         Currently supports: "lorenz", "cylinder", "grayscott"
 
         Args:
