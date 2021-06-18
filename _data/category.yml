@@ -1,2 +1,4 @@
 - name: updates
   img: "/assets/images/updates.jpg"
+- name: results
+  img: "/assets/images/results.jpg"
