@@ -12,14 +12,13 @@ import os, time
 import h5py
 import torch
 import logging
-from typing import Tuple
+from typing import Tuple, List
 from torch.utils.data import DataLoader
 from torch.utils.data.dataset import Dataset
 from abc import abstractmethod
 from collections import OrderedDict
 from typing import Dict, List, Optional
 from dataclasses import dataclass
-
 
 logger = logging.getLogger(__name__)
 
@@ -57,37 +56,56 @@ class LorenzDataHandler(EmbeddingDataHandler):
     """Built in embedding data handler for Lorenz system
     """
     class LorenzDataset(Dataset):
-        def __init__(self, examples):
+        """Dataset for training Lorenz embedding model
+
+        Args:
+            examples (List): list of training/testing examples
+        """
+        def __init__(self, examples: List):
+            """Constructor
+            """
             self.examples = examples
 
         def __len__(self):
             return len(self.examples)
 
         def __getitem__(self, i) -> Dict[str, torch.Tensor]:
-            return {"input_states": self.examples[i]}
+            return {"states": self.examples[i]}
 
     @dataclass
     class LorenzDataCollator:
-        """
-        Data collator for lorenz embedding problem
+        """Data collator for lorenz embedding problem
         """
         # Default collator
         def __call__(self, examples:List[Dict[str, torch.Tensor]]) -> Dict[str, torch.Tensor]:
             
-            x_data_tensor =  torch.stack([example['input_states'] for example in examples])
-            return {"input_states": x_data_tensor}
+            x_data_tensor =  torch.stack([example['states'] for example in examples])
+            return {"states": x_data_tensor}
 
-    def createTrainingLoader(self, file_path: str,  #hdf5 file
+    def createTrainingLoader(self, 
+            file_path: str,  #hdf5 file
             block_size: int, # Length of time-series
-            stride:int = 1,
-            ndata:int = -1,
-            batch_size:int=32,
-            shuffle=True,
-        ):
-        '''
-        Loads time-series data and creates training/testing loaders
-        '''
-        print('Creating training loader')
+            stride: int = 1,
+            ndata: int = -1,
+            batch_size: int = 32,
+            shuffle: bool = True,
+        ) -> DataLoader:
+        """Creating training data loader for Lorenz system.
+        For a single training simulation, the total time-series is sub-chunked into
+        smaller blocks for training.
+
+        Args:
+            file_path (str): Path to HDF5 file with training data
+            block_size (int): The length of time-series blocks
+            stride (int): Stride of each time-series block
+            ndata (int, optional): Number of training time-series. Defaults to -1.
+            batch_size (int, optional): Training batch size. Defaults to 32.
+            shuffle (bool, optional): Turn on mini-batch shuffling in dataloader. Defaults to True.
+
+        Returns:
+            (DataLoader): Training loader
+        """
+        logger.info('Creating training loader.')
         assert os.path.isfile(file_path)
         examples = []
         with h5py.File(file_path, "r") as f:
@@ -103,34 +121,45 @@ class LorenzDataHandler(EmbeddingDataHandler):
                 if(ndata > 0 and samples > ndata): #If we have enough time-series samples break loop
                     break
 
+        # Calculate normalization constants
         data = torch.cat(examples, dim=0)
-        self.mu = torch.mean(data)
-        self.std = torch.std(data)
         self.mu = torch.tensor([torch.mean(data[:,:,0]), torch.mean(data[:,:,1]), torch.mean(data[:,:,2])])
         self.std = torch.tensor([torch.std(data[:,:,0]), torch.std(data[:,:,1]), torch.std(data[:,:,2])])
 
         # Needs to min-max normalization due to the reservoir matrix, needing to have a spectral density below 1
         if(data.size(0) < batch_size):
-            print('Lower batch-size to {:d}'.format(data.size(0)))
+            logger.warning('Lower batch-size to {:d}'.format(data.size(0)))
             batch_size = data.size(0)
 
+        # Create dataset, collator, and dataloader
         dataset = self.LorenzDataset(data)
         data_collator = self.LorenzDataCollator()
         training_loader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=data_collator, drop_last=True)
+        
         return training_loader
 
-    def createTestingLoader(self, file_path: str, #hdf5 file
+    def createTestingLoader(self, 
+            file_path: str,
             block_size: int,
             ndata:int = -1,
             batch_size:int=32,
-            shuffle=False,
-            mu:float=0.0,
-            std:float=1.0
-        ):
-        '''
-        Loads time-series data and creates training/testing loaders
-        '''
-        print('Creating testing loader')
+            shuffle=False
+        ) -> DataLoader:
+        """Creating testing/validation data loader for Lorenz system.
+        For a data case with time-steps [0,T], this method extract a smaller
+        time-series to be used for testing [0, S], s.t. S < T.
+
+        Args:
+            file_path (str): Path to HDF5 file with testing data
+            block_size (int): The length of time-series blocks
+            ndata (int, optional): Number of testing time-series. Defaults to -1.
+            batch_size (int, optional): Testing batch size. Defaults to 32.
+            shuffle (bool, optional): Turn on mini-batch shuffling in dataloader. Defaults to False.
+
+        Returns:
+            (DataLoader): Testing/validation data loader
+        """
+        logger.info('Creating testing loader')
         assert os.path.isfile(file_path)
         examples = []
         with h5py.File(file_path, "r") as f:
@@ -150,10 +179,10 @@ class LorenzDataHandler(EmbeddingDataHandler):
         # Combine data-series
         data = torch.cat(examples, dim=0)
         if(data.size(0) < batch_size):
-            print('Lower batch-size to {:d}'.format(data.size(0)))
+            logger.warning('Lower batch-size to {:d}'.format(data.size(0)))
             batch_size = data.size(0)
 
-        dataset = self.LorenzDataset((data-mu)/std)
+        dataset = self.LorenzDataset(data)
         data_collator = self.LorenzDataCollator()
         testing_loader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=data_collator, drop_last=False)
 
