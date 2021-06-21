@@ -1,36 +1,61 @@
+"""
+=====
+Distributed by: Notre Dame SCAI Lab (MIT Liscense)
+- Associated publication:
+url: https://arxiv.org/abs/2010.03957
+doi: 
+github: https://github.com/zabaras/transformer-physx
+=====
+"""
 import numpy as np
 import os, time
 import h5py
 import torch
-import torch.nn as nn
-from torch.utils.data import DataLoader, TensorDataset
+import logging
+from typing import Tuple
+from torch.utils.data import DataLoader
 from torch.utils.data.dataset import Dataset
 from abc import abstractmethod
 from collections import OrderedDict
 from typing import Dict, List, Optional
 from dataclasses import dataclass
-import logging
+
 
 logger = logging.getLogger(__name__)
 
 class EmbeddingDataHandler(object):
-
+    """Base class for embedding data handlers.
+    Data handlers are used to create the training and
+    testing datasets.
+    """
     mu = None
     std = None
+
     @property
-    def norm_constants(self):
+    def norm_params(self) -> Tuple:
+        """Get normalization parameters
+
+        Raises:
+            ValueError: If normalization parameters have not been initialized
+
+        Returns:
+            (Tuple): mean and standard deviation
+        """
         if self.mu is None or self.std is None:
             raise ValueError("Normalization constants set yet!")
         return self.mu, self.std
+
     @abstractmethod
     def createTrainingLoader(self, *args, **kwargs):
         pass
+
     @abstractmethod
     def createTestingLoader(self, *args, **kwargs):
         pass
 
 class LorenzDataHandler(EmbeddingDataHandler):
-
+    """Built in embedding data handler for Lorenz system
+    """
     class LorenzDataset(Dataset):
         def __init__(self, examples):
             self.examples = examples

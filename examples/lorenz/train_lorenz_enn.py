@@ -41,7 +41,7 @@ if __name__ == '__main__':
 
     # Set up model
     model = AutoEmbeddingModel.init_trainer(args.exp_name, config).to(args.device)
-    mu, std = dataloader.norm_constants
+    mu, std = dataloader.norm_params
     model.embedding_model.mu = mu.to(args.device)
     model.embedding_model.std = std.to(args.device)
     if args.epoch_start > 1:
