@@ -58,7 +58,7 @@ class AutoEmbeddingModel:
             config (PhysConfig): Transformer configuration class
 
         Raises:
-            AssertionError: If model_name is not a supported model type
+            ValueError: If model_name is not a supported model type
 
         Returns:
             (EmbeddingModel): Initialized embedding model
@@ -70,7 +70,7 @@ class AutoEmbeddingModel:
             model = model_class(config)
         else:
             err_str = "Provided model name, {:s}, not found in existing embedding models.".format(model_name)
-            raise AssertionError(err_str)
+            raise ValueError(err_str)
 
         return model
     

@@ -234,7 +234,7 @@ class CylinderDataHandler(EmbeddingDataHandler):
         batch_size: int = 32,
         shuffle: bool = True,
     ) -> DataLoader:
-        """Creating training data loader for flow around a cylinder system.
+        """Creating training data loader for the flow around a cylinder system.
         For a single training simulation, the total time-series is sub-chunked into
         smaller blocks for training.
 
@@ -295,7 +295,7 @@ class CylinderDataHandler(EmbeddingDataHandler):
             batch_size: int = 32,
             shuffle: bool =False,
         ) -> DataLoader:
-        """Creating testing/validation data loader for Lorenz system.
+        """Creating testing/validation data loader for the flow around a cylinder system.
         For a data case with time-steps [0,T], this method extract a smaller
         time-series to be used for testing [0, S], s.t. S < T.
 
@@ -348,89 +348,90 @@ class CylinderDataHandler(EmbeddingDataHandler):
 
 
 class GrayScottDataHandler(EmbeddingDataHandler):
-    """Class for creating training and testing loaders for the Gray-Scott embedding model.
+    """Built in embedding data handler for the Gray-Scott system
     """
     class GrayScottDataset(Dataset):
-        """PyTorch dataset for Gray-Scott system, dynamically loads data from file each
-        mini-batch since loading an entire data-set would be way too large
+        """Dataset for Gray-Scott system. Dynamically loads data from file each
+        mini-batch since loading an entire data-set would be way too large. This data-set
+        support the loading of sub-chunked time-series.
 
-        :param h5_file: path to hdf5 file with raw data
-        :type h5_file: str
-        :param f: list of string Gray-scott feed rates
-        :type f: list
-        :param k: list of string Gray-scott kill rates
-        :type k: list
-        :param indices: list of start indexes for each time-series block
-        :type f: list
-        :param block_size: stride interval to sample blocks from, defaults to 1
-        :type block_size: int, optional
+        Args:
+            h5_file (str): Path to hdf5 file with raw data
+            keys (List): List of keys corresponding to each example
+            indices (List): List of start indices for each time-series block
+            block_size (int, optional): List to time-series block sizes for each example. Defaults to 1.
         """
-        def __init__(self, h5_file, keys, indices, block_size=1, permutes=2):
+        def __init__(self, 
+            h5_file: str, 
+            keys: List, 
+            indices: List, 
+            block_size: int = 1
+        ) -> None:
+            """Constructor
+            """
             self.h5_file = h5_file
             self.keys = keys 
             self.idx = indices
             self.block_size = block_size
 
-            self.permute_idxs = np.random.randint(0, 32, size=(permutes*len(self.keys), 3))
-            print(self.permute_idxs.shape)
-
         def __len__(self):
             return len(self.keys)
 
         def __getitem__(self, i) -> Dict[str, torch.Tensor]:
-            idx0 = self.idx[i]  # start index
-            key = self.keys[i]
+            idx0 = self.idx[i] # Time-step start index
+            key = self.keys[i] # HDF5 dataset key
+            # Read from file and extract time-series of given block size
             with h5py.File(self.h5_file, "r") as h5_file:
                 u = h5_file['/'.join((key, 'u'))][idx0: idx0 + self.block_size, :, :, :]
                 v = h5_file['/'.join((key, 'v'))][idx0: idx0 + self.block_size, :, :, :]
 
-
             data = torch.stack([torch.Tensor(u), torch.Tensor(v)], dim=1)
 
-            return {'input_states': data}
+            return {'states': data}
 
     @dataclass
     class GrayScottDataCollator:
-        """
-        Data collator for the Gray-scott embedding problem
+        """Data collator for the Gray-scott embedding problem
         """
         # Default collator
         def __call__(self, examples:List[Dict[str, torch.Tensor]]) -> Dict[str, torch.Tensor]:
             
-            x_data_tensor =  torch.stack([example['x_data'] for example in examples])
-            return {"input_states": x_data_tensor}
+            x_data_tensor =  torch.stack([example['states'] for example in examples])
+
+            return {"states": x_data_tensor}
 
     def createTrainingLoader(self,
-         file_path: str,  # hdf5 file
-         block_size: int,  # Length of time-series
-         stride: int = 1,
-         ndata: int = -1,
-         batch_size: int = 32,
-         shuffle = True,
-         mpi_rank=-1,
-         mpi_size=1
-         ):
-        """Create training data loader from raw simulation data. A single simulation
-        time series is broken down into smaller blocks for training.
+        file_path: str,  # hdf5 file
+        block_size: int,  # Length of time-series
+        stride: int = 1,
+        ndata: int = -1,
+        batch_size: int = 32,
+        shuffle: bool = True,
+        mpi_rank: int = -1,
+        mpi_size: int = 1
+    ) -> DataLoader:
+        """Creating training data loader for the Gray-Scott system.
+        For a single training simulation, the total time-series is sub-chunked into
+        smaller blocks for training. This particular dataloader support splitting the
+        dataset between GPU processes for parallel training if needed. 
 
-        :file_path file_path: path to hdf5 with simulation data
-        :type file_path: str
-        :param block_size: length of time-series blocks to make for training Koopman dynamics
-        :type block_size: int
-        :param stride: stride interval to sample blocks from, defaults to 1
-        :type stride: int, optional
-        :param ndata: number of training data samples to use, uses all data if negative, defaults to -1
-        :type ndata: int, optional
-        :param batch_size: training batch size, defaults to 32
-        :type batch_size: int, optional
-        :param shuffle: shuffle training data, default to True
-        :type shuffle: bool, optional
-        :returns:
-            - training_loader: PyTorch data loader
-        :rtype: torch.training_utils.data.DataLoader
+        Args:
+            file_path (str): Path to HDF5 file with training data
+            block_size (int): The length of time-series blocks
+            stride (int): Stride of each time-series block
+            ndata (int, optional): Number of training time-series. If negative, all of the provided 
+            data will be used. Defaults to -1.
+            batch_size (int, optional): Training batch size. Defaults to 32.
+            shuffle (bool, optional): Turn on mini-batch shuffling in dataloader. Defaults to True.
+            mpi_rank (int, optional): Rank of current MPI process. Defaults to -1.
+            mpi_size (int, optional): Number of training processes. Set to 1 for serial training. Defaults to 1. 
+
+        Returns:
+            (DataLoader): Training loader
         """
         logger.info('Creating training loader')
         assert os.path.isfile(file_path)
+
         idx = []
         key = []
         with h5py.File(file_path, "r") as h5_file:
@@ -449,16 +450,8 @@ class GrayScottDataHandler(EmbeddingDataHandler):
                 if ndata > 0 and nsamp > ndata:  # If we have enough time-series samples break loop
                     break
 
-                if ndata > 0 and nsamp > ndata:  # If we have enough time-series samples break loop
-                    break
-        # Normalization for u, v, f, k
+        # Normalization for u, v
         # These values are pre-processed
-        self.mu = torch.tensor([0.6823825, 0.09115206, 0.02448318, 0.0525])
-        self.std = torch.tensor([0.20818108, 0.10649372, 0.01630819, 0.00790569])
-
-        self.mu = torch.tensor([0.])
-        self.std = torch.tensor([1.0])
-
         self.mu = torch.tensor([0.64169478, 0.11408507])
         self.std = torch.tensor([0.25380379, 0.11043673])
         
@@ -467,7 +460,7 @@ class GrayScottDataHandler(EmbeddingDataHandler):
             batch_size = len(idx)
         logger.info('Number of training blocks: {}'.format(len(idx)))
 
-        if not mpi_rank == -1:
+        if mpi_size > 1:
             logger.info('Splitting data-set between MPI processes')
             rng = np.random.default_rng(seed=12356) # Seed needs to be consistent between MPI processes
             data_len = len(idx)
@@ -483,21 +476,34 @@ class GrayScottDataHandler(EmbeddingDataHandler):
 
         data_collator = self.GrayScottDataCollator()
         training_loader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, drop_last=True, collate_fn=data_collator, num_workers=1)
+        
         return training_loader
 
-    def createTestingLoader(self, file_path: str,  # hdf5 file
-                            block_size: int,
-                            ndata: int = -1,
-                            batch_size: int = 32,
-                            shuffle=False,
-                            mu: float = 0.0,
-                            std: float = 1.0
-                            ):
-        '''
-        Loads time-series data and creates training/testing loaders
-        '''
+    def createTestingLoader(self, 
+        file_path: str,  # hdf5 file
+        block_size: int,
+        ndata: int = -1,
+        batch_size: int = 32,
+        shuffle=False
+    ) -> DataLoader:
+        """Creating testing/validation data loader for the Gray-Scott system.
+        For a data case with time-steps [0,T], this method extract a smaller
+        time-series to be used for testing [0, S], s.t. S < T.
+
+        Args:
+            file_path (str): Path to HDF5 file with testing data
+            block_size (int): The length of testing time-series
+            ndata (int, optional): Number of testing time-series. If negative, all of the provided 
+            data will be used. Defaults to -1.
+            batch_size (int, optional): Testing batch size. Defaults to 32.
+            shuffle (bool, optional): Turn on mini-batch shuffling in dataloader. Defaults to False.
+
+        Returns:
+            (DataLoader): Testing/validation data loader
+        """
         logger.info('Creating testing loader')
         assert os.path.isfile(file_path)
+
         idx = []
         key = []
         with h5py.File(file_path, "r") as h5_file:
@@ -516,11 +522,8 @@ class GrayScottDataHandler(EmbeddingDataHandler):
                 if ndata > 0 and nsamp > ndata:  # If we have enough time-series samples break loop
                     break
 
-                if ndata > 0 and nsamp > ndata:  # If we have enough time-series samples break loop
-                    break
-
         if len(idx) < batch_size:
-            logger.info('Lowering batch-size to {:d}'.format(len(idx)))
+            logger.warning('Lowering batch-size to {:d}'.format(len(idx)))
             batch_size = len(idx)
 
         dataset = self.GrayScottDataset(file_path, key, idx, block_size)
@@ -533,13 +536,26 @@ LOADER_MAPPING = OrderedDict(
     [
         ("lorenz", LorenzDataHandler),
         ("cylinder", CylinderDataHandler),
-        ("cylinder-auto", CylinderDataHandler),
         ("grayscott", GrayScottDataHandler)
     ]
 )
 class AutoDataHandler():
+    """Helper class for intializing different built in data-handlers for embedding training
+    """
     @classmethod
-    def load_data_handler(cls, model_name, **kwargs):
+    def load_data_handler(cls, model_name: str, **kwargs) -> EmbeddingDataHandler:
+        """Gets built-in data handler.
+        Currently supports: "lorenz", "cylinder", "grayscott"
+
+        Args:
+            model_name (str): Model name
+
+        Raises:
+            ValueError: If model_name is not a supported model type
+
+        Returns:
+            (EmbeddingDataHandler): Embedding data handler
+        """
         # First check if the model name is a pre-defined config
         if (model_name in LOADER_MAPPING.keys()):
             loader_class = LOADER_MAPPING[model_name]
@@ -548,4 +564,5 @@ class AutoDataHandler():
         else:
             err_str = "Provided model name: {}, not present in built=int data handlers".format(model_name)
             raise ValueError(err_str)
+
         return loader
