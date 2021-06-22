@@ -56,7 +56,7 @@ class LorenzDataHandler(EmbeddingDataHandler):
     """Built in embedding data handler for Lorenz system
     """
     class LorenzDataset(Dataset):
-        """Dataset for training Lorenz embedding model
+        """Dataset for training Lorenz embedding model.
 
         Args:
             examples (List): list of training/testing examples
@@ -78,18 +78,19 @@ class LorenzDataHandler(EmbeddingDataHandler):
         """
         # Default collator
         def __call__(self, examples:List[Dict[str, torch.Tensor]]) -> Dict[str, torch.Tensor]:
-            
+            # Stack examples in mini-batch
             x_data_tensor =  torch.stack([example['states'] for example in examples])
+
             return {"states": x_data_tensor}
 
     def createTrainingLoader(self, 
-            file_path: str,  #hdf5 file
-            block_size: int, # Length of time-series
-            stride: int = 1,
-            ndata: int = -1,
-            batch_size: int = 32,
-            shuffle: bool = True,
-        ) -> DataLoader:
+        file_path: str,  #hdf5 file
+        block_size: int, # Length of time-series
+        stride: int = 1,
+        ndata: int = -1,
+        batch_size: int = 32,
+        shuffle: bool = True,
+    ) -> DataLoader:
         """Creating training data loader for Lorenz system.
         For a single training simulation, the total time-series is sub-chunked into
         smaller blocks for training.
@@ -98,7 +99,8 @@ class LorenzDataHandler(EmbeddingDataHandler):
             file_path (str): Path to HDF5 file with training data
             block_size (int): The length of time-series blocks
             stride (int): Stride of each time-series block
-            ndata (int, optional): Number of training time-series. Defaults to -1.
+            ndata (int, optional): Number of training time-series. If negative, all of the provided 
+            data will be used. Defaults to -1.
             batch_size (int, optional): Training batch size. Defaults to 32.
             shuffle (bool, optional): Turn on mini-batch shuffling in dataloader. Defaults to True.
 
@@ -139,20 +141,21 @@ class LorenzDataHandler(EmbeddingDataHandler):
         return training_loader
 
     def createTestingLoader(self, 
-            file_path: str,
-            block_size: int,
-            ndata:int = -1,
-            batch_size:int=32,
-            shuffle=False
-        ) -> DataLoader:
+        file_path: str,
+        block_size: int,
+        ndata: int = -1,
+        batch_size: int =32,
+        shuffle: bool =False
+    ) -> DataLoader:
         """Creating testing/validation data loader for Lorenz system.
         For a data case with time-steps [0,T], this method extract a smaller
         time-series to be used for testing [0, S], s.t. S < T.
 
         Args:
             file_path (str): Path to HDF5 file with testing data
-            block_size (int): The length of time-series blocks
-            ndata (int, optional): Number of testing time-series. Defaults to -1.
+            block_size (int): The length of testing time-series
+            ndata (int, optional): Number of testing time-series. If negative, all of the provided 
+            data will be used. Defaults to -1.
             batch_size (int, optional): Testing batch size. Defaults to 32.
             shuffle (bool, optional): Turn on mini-batch shuffling in dataloader. Defaults to False.
 
@@ -190,9 +193,18 @@ class LorenzDataHandler(EmbeddingDataHandler):
 
 
 class CylinderDataHandler(EmbeddingDataHandler):
-
+    """Built in embedding data handler for flow around a cylinder system
+    """
     class CylinderDataset(Dataset):
-        def __init__(self, examples, visc):
+        """Dataset for training flow around a cylinder embedding model
+
+        Args:
+            examples (List): list of training/testing example flow fields
+            visc (List): list of training/testing example viscosities
+        """
+        def __init__(self, examples: List, visc: List) -> None:
+            """Constructor
+            """
             self.examples = examples
             self.visc = visc
 
@@ -200,32 +212,47 @@ class CylinderDataHandler(EmbeddingDataHandler):
             return len(self.examples)
 
         def __getitem__(self, i) -> Dict[str, torch.Tensor]:
-            return {'input_states': self.examples[i], "viscosity": self.visc[i]}
+            return {"states": self.examples[i], "viscosity": self.visc[i]}
 
     @dataclass
     class CylinderDataCollator:
-        """
-        Data collator for cylinder embedding problem
+        """Data collator for flow around a cylinder embedding problem
         """
         # Default collator
         def __call__(self, examples:List[Dict[str, torch.Tensor]]) -> Dict[str, torch.Tensor]:
-            
-            x_data_tensor =  torch.stack([example['input_states'] for example in examples])
-            visc_tensor =  torch.stack([example['viscosity'] for example in examples])
-            return {"input_states": x_data_tensor, "viscosity": visc_tensor}
+            # Stack examples in mini-batch
+            x_data_tensor =  torch.stack([example["states"] for example in examples])
+            visc_tensor =  torch.stack([example["viscosity"] for example in examples])
 
-    def createTrainingLoader(self, file_path: str,  # hdf5 file
-                             block_size: int,  # Length of time-series
-                             stride: int = 1,
-                             ndata: int = -1,
-                             batch_size: int = 32,
-                             shuffle=True,
-                             ):
-        '''
-        Loads time-series data and creates training/testing loaders
-        '''
-        print('Creating training loader')
+            return {"states": x_data_tensor, "viscosity": visc_tensor}
+
+    def createTrainingLoader(self, 
+        file_path: str,
+        block_size: int,
+        stride: int = 1,
+        ndata: int = -1,
+        batch_size: int = 32,
+        shuffle: bool = True,
+    ) -> DataLoader:
+        """Creating training data loader for flow around a cylinder system.
+        For a single training simulation, the total time-series is sub-chunked into
+        smaller blocks for training.
+
+        Args:
+            file_path (str): Path to HDF5 file with training data
+            block_size (int): The length of time-series blocks
+            stride (int): Stride of each time-series block
+            ndata (int, optional): Number of training time-series. If negative, all of the provided 
+            data will be used. Defaults to -1.
+            batch_size (int, optional): Training batch size. Defaults to 32.
+            shuffle (bool, optional): Turn on mini-batch shuffling in dataloader. Defaults to True.
+
+        Returns:
+            (DataLoader): Training loader
+        """
+        logging.info('Creating training loader')
         assert os.path.isfile(file_path)
+
         examples = []
         visc = []
         with h5py.File(file_path, "r") as f:
@@ -253,7 +280,7 @@ class CylinderDataHandler(EmbeddingDataHandler):
         self.std = torch.tensor([torch.std(data[:,:,0]), torch.std(data[:,:,1]), torch.std(data[:,:,2]), torch.std(torch.tensor(visc))])
         # Needs to min-max normalization due to the reservoir matrix, needing to have a spectral density below 1
         if (data.size(0) < batch_size):
-            print('Lower batch-size to {:d}'.format(data.size(0)))
+            logging.warn('Lower batch-size to {:d}'.format(data.size(0)))
             batch_size = data.size(0)
 
         dataset = self.CylinderDataset(data, torch.stack(visc, dim=0))
@@ -261,19 +288,31 @@ class CylinderDataHandler(EmbeddingDataHandler):
         training_loader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=data_collator, drop_last=True)
         return training_loader
 
-    def createTestingLoader(self, file_path: str,  # hdf5 file
-                            block_size: int,
-                            ndata: int = -1,
-                            batch_size: int = 32,
-                            shuffle=False,
-                            mu: float = 0.0,
-                            std: float = 1.0
-                            ):
-        '''
-        Loads time-series data and creates training/testing loaders
-        '''
-        print('Creating testing loader')
+    def createTestingLoader(self, 
+            file_path: str,
+            block_size: int,
+            ndata: int = -1,
+            batch_size: int = 32,
+            shuffle: bool =False,
+        ) -> DataLoader:
+        """Creating testing/validation data loader for Lorenz system.
+        For a data case with time-steps [0,T], this method extract a smaller
+        time-series to be used for testing [0, S], s.t. S < T.
+
+        Args:
+            file_path (str): Path to HDF5 file with testing data
+            block_size (int): The length of testing time-series
+            ndata (int, optional): Number of testing time-series. If negative, all of the provided 
+            data will be used. Defaults to -1.
+            batch_size (int, optional): Testing batch size. Defaults to 32.
+            shuffle (bool, optional): Turn on mini-batch shuffling in dataloader. Defaults to False.
+
+        Returns:
+            (DataLoader): Testing/validation data loader
+        """
+        logging.info('Creating testing loader')
         assert os.path.isfile(file_path)
+
         examples = []
         visc = []
         with h5py.File(file_path, "r") as f:
@@ -298,7 +337,7 @@ class CylinderDataHandler(EmbeddingDataHandler):
         # Combine data-series
         data = torch.stack(examples, dim=0)
         if (data.size(0) < batch_size):
-            print('Lower batch-size to {:d}'.format(data.size(0)))
+            logging.warning('Lower batch-size to {:d}'.format(data.size(0)))
             batch_size = data.size(0)
 
         dataset = self.CylinderDataset(data, torch.stack(visc, dim=0))
