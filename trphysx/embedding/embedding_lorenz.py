@@ -219,3 +219,33 @@ class LorenzEmbeddingTrainer(EmbeddingTrainingHead):
             g1_old = g1Pred
 
         return loss, loss_reconstruct
+
+    def evaluate(self, states: Tensor) -> Tuple[float, Tensor, Tensor]:
+        """Evaluates the embedding models reconstruction error and returns its
+        predictions.
+
+        Args:
+            states (Tensor): [B, T, 3] Time-series feature tensor
+
+        Returns:
+            Tuple[Float, Tensor, Tensor]: Test error, Predicted states, Target states
+        """
+        self.embedding_model.eval()
+
+        mseLoss = nn.MSELoss()
+
+        # Pull out targets from prediction dataset
+        yTarget = states[:,1:].to(self.args.device)
+        xInput = states[:,:-1].to(self.args.device)
+        yPred = torch.zeros(yTarget.size()).to(self.args.device)
+
+        # Test accuracy of one time-step
+        for i in range(xInput.size(1)):
+            xInput0 = xInput[:,i].to(self.args.device)
+            g0 = self.embedding_model(xInput0)
+            yPred0 = self.embedding_model.recover(g0)
+            yPred[:,i] = yPred0.squeeze().detach()
+
+        test_loss = mseLoss(yTarget, yPred)
+
+        return test_loss, yPred, yTarget

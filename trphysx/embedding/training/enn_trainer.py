@@ -1,28 +1,35 @@
-'''
+"""
 =====
+Distributed by: Notre Dame SCAI Lab (MIT Liscense)
 - Associated publication:
-url: 
+url: https://arxiv.org/abs/2010.03957
 doi: 
-github: 
+github: https://github.com/zabaras/transformer-physx
 =====
-'''
-import sys
+"""
 import os
 import logging
-import h5py
 import torch
 import torch.nn as nn
 import numpy as np
 import argparse
 
 from typing import Any, Union, Dict, Optional, Tuple
-from torch.utils.data import Dataset, DataLoader, RandomSampler, SequentialSampler
-from ..embedding_model import EmbeddingModel
+from torch.utils.data import DataLoader
+from ..embedding_model import EmbeddingTrainingHead
+from ...viz.viz_model import Viz
 
 logger = logging.getLogger(__name__)
 
+Optimizer = torch.optim.Optimizer
+Scheduler = torch.optim._LRScheduler
+
 def set_seed(seed: int):
-    # random.seed(seed)
+    """Set random see
+
+    Args:
+        seed (int): random seed
+    """
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
@@ -31,20 +38,19 @@ class EmbeddingTrainer:
     """Trainer for Koopman embedding model
 
     Args:
-        model (EmbeddingModel): Embedding model
+        model (EmbeddingTrainingHead): Embedding training model
         args (TrainingArguments): Training arguments
-        optimizers (Tuple[torch.optim.Optimizer, torch.optim.lr_scheduler.LambdaLR], optional): Tuple of pytorch optimizer and lr scheduler. Defaults to None.
-        train_dataset (Optional[Dataset], optional): Training dataset. Defaults to None.
-        eval_dataset (Optional[Dataset], optional): Eval/Validation dataset. Defaults to None.
+        optimizers (Tuple[Optimizer, Scheduler]): Tuple of Pytorch optimizer and lr scheduler. Defaults to None.
         viz (Optional[Viz], optional): Visualization class. Defaults to None.
     """
     def __init__(self,
-            model: EmbeddingModel,
+            model: EmbeddingTrainingHead,
             args: argparse.ArgumentParser,
-            optimizers: Tuple[torch.optim.Optimizer, torch.optim.lr_scheduler.LambdaLR] = None,
-            viz = None
-        ):
-        
+            optimizers: Tuple[Optimizer, Scheduler],
+            viz: Viz = None
+        ) -> None:
+        """Constructor
+        """
         self.model = model.to(args.device)
         self.args = args
         self.optimizers = optimizers
@@ -68,54 +74,51 @@ class EmbeddingTrainer:
 
         set_seed(self.args.seed)
 
-    def trainKoopman(self, training_loader:DataLoader, eval_dataloader:DataLoader):
-        """Trains the transformer model
-        TODO: Add loading of optimizer and scheduler
+    def trainKoopman(self, training_loader:DataLoader, eval_dataloader:DataLoader) -> None:
+        """Training loop for the Koopman embedding model
+
+        Args:
+            training_loader (DataLoader): Training loader
+            eval_dataloader (DataLoader): Evaluation loader
         """
         optimizer = self.optimizers[0]
         lr_scheduler = self.optimizers[1]
-
-        model = self.model.train()
-
         # Loop over epochs
         for epoch in range(self.args.epoch_start+1, self.args.epochs + 1):
               
             loss_total = 0.0
             loss_reconstruct = 0.0
-            model.zero_grad()
+            self.model.zero_grad()
             for mbidx, inputs in enumerate(training_loader):
 
-                loss0, loss_reconstruct0 = model(**inputs)
+                loss0, loss_reconstruct0 = self.model(**inputs)
                 loss0 = loss0.sum()
 
                 loss_reconstruct = loss_reconstruct + loss_reconstruct0.sum()
                 loss_total = loss_total + loss0.detach()
                 # Backwards!
                 loss0.backward()
-                torch.nn.utils.clip_grad_norm_(model.parameters(), 0.1)
+                torch.nn.utils.clip_grad_norm_(self.model.parameters(), 0.1)
                 optimizer.step()
                 optimizer.zero_grad()
 
                 if mbidx+1 % 10 == 0:
                     logger.info('Epoch {:d}: Completed mini-batch {}/{}.'.format(epoch, mbidx+1, len(training_loader)))
 
+            # Progress learning rate scheduler
             lr_scheduler.step()
             for param_group in optimizer.param_groups:
                 cur_lr = param_group['lr']
                 break
             logger.info("Epoch {:d}: Training loss {:.03f}, Lr {:.05f}".format(epoch, loss_total, cur_lr))
 
+            # Evaluate current model
             if(epoch%5 == 0 or epoch == 1):
                 output = self.evaluate(eval_dataloader, epoch=epoch)
                 logger.info('Epoch {:d}: Test loss: {:.02f}'.format(epoch, output['test_error']))
 
+            # Save model checkpoint
             if epoch % self.args.save_steps == 0:
-                # In all cases (even distributed/parallel), self.model is always a reference
-                # to the model we want to save.
-                if hasattr(model, "module"):
-                    assert model.module is self.model
-                else:
-                    assert model is self.model
                 logger.info("Checkpointing model, optimizer and scheduler.")
                 # Save model checkpoint
                 self.model.save_model(self.args.ckpt_dir, epoch=epoch)
@@ -124,8 +127,8 @@ class EmbeddingTrainer:
 
 
     @torch.no_grad()
-    def evaluate(self, eval_dataloader:DataLoader, epoch:int = 0) -> Dict[str, float]:
-        """Run evaluation and return metrics.
+    def evaluate(self, eval_dataloader: DataLoader, epoch: int = 0) -> Dict[str, float]:
+        """Run evaluation, plot prediction and return metrics.
 
         Args:
             eval_dataset (Optional[Dataset], optional): Pass a dataset if you wish to override the 
@@ -135,33 +138,13 @@ class EmbeddingTrainer:
         Returns:
             Dict[str, float]: Dictionary of prediction metrics
         """
-        model = self.model.embedding_model.eval()
-
         test_loss = 0
-        mseLoss = nn.MSELoss()
         for mbidx, inputs in enumerate(eval_dataloader):
             
-            # Pull out targets from prediction dataset
-            yTarget = inputs['input_states'][:,1:].to(self.args.device)
-
-            xInput = inputs['input_states'][:,:-1].to(self.args.device)
-            yPred = torch.zeros(yTarget.size()).to(self.args.device)
-            
-            del inputs['input_states']
-            # Keep extra arguements that are provided by the collocator
-            for key in inputs.keys():
-                inputs[key] = inputs[key].to(self.args.device)
-
-            # Test accuracy of one time-step
-            for i in range(xInput.size(1)):
-                xInput0 = xInput[:,i].to(self.args.device)
-                g0 = model.embed(xInput0, **inputs)
-                yPred0 = model.recover(g0)
-                yPred[:,i] = yPred0.squeeze().detach()
-
-            test_loss = test_loss + mseLoss(yTarget, yPred)
+            loss, state_pred, state_target = self.model.evaluate(**inputs)
+            test_loss = test_loss + loss
 
             if not self.viz is None and mbidx == 0:
-                self.viz.plotEmbeddingPrediction(yPred,yTarget, epoch=epoch)
+                self.viz.plotEmbeddingPrediction(state_pred, state_target, epoch=epoch)
 
             return {'test_error': test_loss/len(eval_dataloader)}

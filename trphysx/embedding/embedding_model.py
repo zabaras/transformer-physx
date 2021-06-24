@@ -124,8 +124,12 @@ class EmbeddingTrainingHead(nn.Module):
     """
 
     @abstractmethod
-    def forward(self):
+    def forward(self, *args, **kwargs):
         raise NotImplementedError("forward function has not been properly overridden")
+
+    @abstractmethod
+    def evaluate(self, *args, **kwargs):
+        raise NotImplementedError("evaluate function has not been properly overridden")
 
     def save_model(self, *args, **kwargs):
         """

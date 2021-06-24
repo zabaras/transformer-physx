@@ -401,8 +401,8 @@ class GrayScottDataHandler(EmbeddingDataHandler):
             return {"states": x_data_tensor}
 
     def createTrainingLoader(self,
-        file_path: str,  # hdf5 file
-        block_size: int,  # Length of time-series
+        file_path: str,
+        block_size: int,
         stride: int = 1,
         ndata: int = -1,
         batch_size: int = 32,
@@ -480,11 +480,11 @@ class GrayScottDataHandler(EmbeddingDataHandler):
         return training_loader
 
     def createTestingLoader(self, 
-        file_path: str,  # hdf5 file
+        file_path: str,
         block_size: int,
         ndata: int = -1,
         batch_size: int = 32,
-        shuffle=False
+        shuffle: bool = False
     ) -> DataLoader:
         """Creating testing/validation data loader for the Gray-Scott system.
         For a data case with time-steps [0,T], this method extract a smaller

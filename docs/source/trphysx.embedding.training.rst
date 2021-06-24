@@ -17,7 +17,7 @@ trphysx.embedding.training.enn\_data\_handler module
    :undoc-members:
    :show-inheritance:
 
-trphysx.embedding.training.enn\_data\_handler module
+trphysx.embedding.training.enn\_trainer module
 ----------------------------------------------------
 
 .. automodule:: trphysx.embedding.training.enn_trainer
