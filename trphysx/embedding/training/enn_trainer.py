@@ -22,7 +22,7 @@ from ...viz.viz_model import Viz
 logger = logging.getLogger(__name__)
 
 Optimizer = torch.optim.Optimizer
-Scheduler = torch.optim._LRScheduler
+Scheduler = torch.optim.lr_scheduler._LRScheduler
 
 def set_seed(seed: int):
     """Set random see
