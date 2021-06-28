@@ -9,6 +9,17 @@ Transformer PhysX is a Python packaged modeled after the [Hugging Face repositor
 
 Transformers for Modeling Physical Systems [ [ArXiV](https://arxiv.org/abs/2010.03957) ]
 
+
+### Colab Quick Start
+
+| | Embedding Model | Transformer |
+|---|:-------:|:-------:|
+| Lorenz | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/zabaras/transformer-physx/blob/main/examples/lorenz/train_lorenz_enn.ipynb) | Coming Soon |
+| Cylinder Flow | - | - |
+| Gray-Scott | - | - |
+| Rossler | Coming Soon | Coming Soon |
+| |  | |
+
 ### Road Map
 
 This is an on going project, hence many parts are not fully developed and will be added in the near future. If you have any particular questions or features you are interested in, please make a issue request so it can be prioritized!
@@ -19,7 +30,7 @@ Thanks for understanding.
 - Add two example scripts to demonstrate training/prediction
 - Parallel Data training for transformer
 - Unsupervised pretraining physics
-
+- Add to pypi
 
 ### Additional Resources
 
