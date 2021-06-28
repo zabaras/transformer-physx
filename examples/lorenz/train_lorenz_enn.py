@@ -11,12 +11,11 @@ from trphysx.embedding.training import *
 
 if __name__ == '__main__':
 
-    sys.argv = sys.argv + ["--exp-name", "lorenz"]
-    sys.argv = sys.argv + ["--training_h5_file", "../../data/lorenz/lorenz_training.hdf5"]
-    sys.argv = sys.argv + ["--eval_h5_file", "../../data/lorenz/lorenz_valid.hdf5"]
-    sys.argv = sys.argv + ["--batch-size", "512"]
-    sys.argv = sys.argv + ["--block-size", "16"]
-    sys.argv = sys.argv + ["--block-size", "16"]
+    sys.argv = sys.argv + ["--exp_name", "lorenz"]
+    sys.argv = sys.argv + ["--training_h5_file", "./data/lorenz_training.hdf5"]
+    sys.argv = sys.argv + ["--eval_h5_file", "./data/lorenz_valid.hdf5"]
+    sys.argv = sys.argv + ["--batch_size", "512"]
+    sys.argv = sys.argv + ["--block_size", "16"]
     sys.argv = sys.argv + ["--ntrain", "2048"]
 
     args = EmbeddingParser().parse()       

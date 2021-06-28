@@ -12,12 +12,13 @@ import random
 import argparse
 import os, errno, json
 import torch
+from typing import List
 
 class EmbeddingParser(argparse.ArgumentParser):
     """Arguments for training embedding models
     """
     def __init__(self):
-        super(EmbeddingParser, self).__init__(description='Arguments for training the embedding models for transformers of physical systems')
+        super().__init__(description='Arguments for training the embedding models for transformers of physical systems')
         self.add_argument('--exp_dir', type=str, default="./embedding", help='directory to save experiments')
         self.add_argument('--exp_name', type=str, default="lorenz", help='experiment name')
 
@@ -59,13 +60,18 @@ class EmbeddingParser(argparse.ArgumentParser):
                 if e.errno != errno.EEXIST:
                     raise
 
-    def parse(self, dirs: bool = True) -> None:
+    def parse(self, args:List = None, dirs: bool = True) -> None:
         """Parse program arguments
 
         Args:
-            dirs (bool): Make experiment directories. Defaults to True.
+            args (List, optional): Explicit list of arguments. Defaults to None.
+            dirs (bool, optional): Make experiment directories. Defaults to True.
         """
-        args = self.parse_args()
+        if args:
+            args = self.parse_args(args=args)
+        else:
+            args = self.parse_args()
+
         args.run_dir = args.exp_dir + '/{}_ntrain{}'.format(args.exp_name, args.ntrain)
 
         args.ckpt_dir = args.run_dir + '/checkpoints'

@@ -108,7 +108,7 @@ class LorenzDataHandler(EmbeddingDataHandler):
             (DataLoader): Training loader
         """
         logger.info('Creating training loader.')
-        assert os.path.isfile(file_path)
+        assert os.path.isfile(file_path), "Training HDF5 file {} not found".format(file_path)
         examples = []
         with h5py.File(file_path, "r") as f:
             # Iterate through stored time-series
@@ -163,7 +163,7 @@ class LorenzDataHandler(EmbeddingDataHandler):
             (DataLoader): Testing/validation data loader
         """
         logger.info('Creating testing loader')
-        assert os.path.isfile(file_path)
+        assert os.path.isfile(file_path), "Eval HDF5 file {} not found".format(file_path)
         examples = []
         with h5py.File(file_path, "r") as f:
             # Iterate through stored time-series
@@ -251,7 +251,7 @@ class CylinderDataHandler(EmbeddingDataHandler):
             (DataLoader): Training loader
         """
         logging.info('Creating training loader')
-        assert os.path.isfile(file_path)
+        assert os.path.isfile(file_path), "Training HDF5 file {} not found".format(file_path)
 
         examples = []
         visc = []
@@ -311,7 +311,7 @@ class CylinderDataHandler(EmbeddingDataHandler):
             (DataLoader): Testing/validation data loader
         """
         logging.info('Creating testing loader')
-        assert os.path.isfile(file_path)
+        assert os.path.isfile(file_path), "Eval HDF5 file {} not found".format(file_path)
 
         examples = []
         visc = []
@@ -430,7 +430,7 @@ class GrayScottDataHandler(EmbeddingDataHandler):
             (DataLoader): Training loader
         """
         logger.info('Creating training loader')
-        assert os.path.isfile(file_path)
+        assert os.path.isfile(file_path), "Training HDF5 file {} not found".format(file_path)
 
         idx = []
         key = []
@@ -502,7 +502,7 @@ class GrayScottDataHandler(EmbeddingDataHandler):
             (DataLoader): Testing/validation data loader
         """
         logger.info('Creating testing loader')
-        assert os.path.isfile(file_path)
+        assert os.path.isfile(file_path), "Eval HDF5 file {} not found".format(file_path)
 
         idx = []
         key = []

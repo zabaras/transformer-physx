@@ -10,11 +10,10 @@ github: https://github.com/zabaras/transformer-physx
 import os
 import logging
 import torch
-import torch.nn as nn
 import numpy as np
 import argparse
 
-from typing import Any, Union, Dict, Optional, Tuple
+from typing import Dict, Tuple
 from torch.utils.data import DataLoader
 from ..embedding_model import EmbeddingTrainingHead
 from ...viz.viz_model import Viz
@@ -41,7 +40,7 @@ class EmbeddingTrainer:
         model (EmbeddingTrainingHead): Embedding training model
         args (TrainingArguments): Training arguments
         optimizers (Tuple[Optimizer, Scheduler]): Tuple of Pytorch optimizer and lr scheduler. Defaults to None.
-        viz (Optional[Viz], optional): Visualization class. Defaults to None.
+        viz (Viz, optional): Visualization class. Defaults to None.
     """
     def __init__(self,
             model: EmbeddingTrainingHead,
@@ -78,8 +77,8 @@ class EmbeddingTrainer:
         """Training loop for the Koopman embedding model
 
         Args:
-            training_loader (DataLoader): Training loader
-            eval_dataloader (DataLoader): Evaluation loader
+            training_loader (DataLoader): Training dataloader
+            eval_dataloader (DataLoader): Evaluation dataloader
         """
         optimizer = self.optimizers[0]
         lr_scheduler = self.optimizers[1]
@@ -131,9 +130,8 @@ class EmbeddingTrainer:
         """Run evaluation, plot prediction and return metrics.
 
         Args:
-            eval_dataset (Optional[Dataset], optional): Pass a dataset if you wish to override the 
-                one on the instance. Defaults to None.
-            epoch (Optional[int], optional): Current epoch, used for naming figures. Defaults to None.
+            eval_dataset (Dataset): Evaluation dataloader
+            epoch (int, optional): Current epoch, used for naming figures. Defaults to 0.
 
         Returns:
             Dict[str, float]: Dictionary of prediction metrics
