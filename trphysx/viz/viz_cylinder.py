@@ -1,44 +1,38 @@
-'''
+"""
 =====
+Distributed by: Notre Dame SCAI Lab (MIT Liscense)
 - Associated publication:
-url: 
+url: https://arxiv.org/abs/2010.03957
 doi: 
-github: 
+github: https://github.com/zabaras/transformer-physx
 =====
-'''
-import os
+"""
 import torch
 import numpy as np
-from typing import Optional
 import torch.nn.functional as F
-
 import matplotlib as mpl
-
 mpl.use('agg')
 import matplotlib.pyplot as plt
-from matplotlib import rc
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib.collections import LineCollection
-from matplotlib.colors import ListedColormap, BoundaryNorm
-from mpl_toolkits.mplot3d.art3d import Line3DCollection
-from matplotlib.patches import Rectangle
-from matplotlib.legend_handler import HandlerBase
 
+from typing import Optional
 from .viz_model import Viz
+
+Tensor = torch.Tensor
 
 class CylinderViz(Viz):
     """Visualization class for flow around a cylinder
 
     Args:
-        plot_dir (Optional[str], optional): Directory to save visualizations in. Defaults to None.
+        plot_dir (str, optional): Directory to save visualizations in. Defaults to None.
     """
-    def __init__(self, plot_dir: Optional[str] = None):
+    def __init__(self, plot_dir: str = None) -> None:
         """Constructor method
         """
         super().__init__(plot_dir=plot_dir)
 
     def _createColorBarVertical(self, fig, ax0, c_min, c_max, label_format="{:02.2f}", cmap='viridis'):
-
+        """Util method for plotting a colorbar next to a subplot
+        """
         p0 = ax0[0, -1].get_position().get_points().flatten()
         p1 = ax0[1, -1].get_position().get_points().flatten()
         ax_cbar = fig.add_axes([p1[2] + 0.005, p1[1], 0.0075, p0[3] - p1[1]])
@@ -50,24 +44,24 @@ class CylinderViz(Viz):
         cbar.set_ticklabels(tickLabels)
 
     def plotPrediction(self,
-            y_pred: torch.Tensor,
-            y_target: torch.Tensor,
-            plot_dir: Optional[str] = None,
-            epoch: Optional[int] = None,
-            pid: Optional[int] = 0,
-            nsteps: int = 10,
-            stride: int = 10
-        ):
+        y_pred: Tensor,
+        y_target: Tensor,
+        plot_dir: str = None,
+        epoch: int = None,
+        pid: int = 0,
+        nsteps: int = 10,
+        stride: int = 10
+    ) -> None:
         """Plots the predicted x-velocity, y-velocity and pressure field contours
 
         Args:
-            y_pred (torch.Tensor): [T, 3, H, W] Prediction tensor.
-            y_target (torch.Tensor): [T, 3, H, W] Target tensor.
-            plot_dir (Optional[str], optional): Directory to save figure, overrides plot_dir one if provided. Defaults to None.
-            epoch (Optional[int], optional): Current epoch, used for file name. Defaults to None.
-            pid (int, Optional): Optional plotting id for indexing file name manually, Defaults to 0.
-            nsteps (int, Optional): Number of timesteps to plot, Defaults to 10.
-            stride (int, optional): Number of timesteps in between plots. Defaults to 20.
+            y_pred (Tensor): [T, 3, H, W] Prediction tensor.
+            y_target (Tensor): [T, 3, H, W] Target tensor.
+            plot_dir (str, optional): Directory to save figure, overrides plot_dir one if provided. Defaults to None.
+            epoch (int, optional): Current epoch, used for file name. Defaults to None.
+            pid (int, optional): Optional plotting id for indexing file name manually. Defaults to 0.
+            nsteps (int, optional): Number of timesteps to plot. Defaults to 10.
+            stride (int, optional): Number of timesteps in between plots. Defaults to 10.
         """
         if plot_dir is None:
             plot_dir = self.plot_dir
@@ -129,24 +123,25 @@ class CylinderViz(Viz):
             self.saveFigure(plot_dir, file_name)
 
     def plotPredictionVorticity(self,
-            y_pred: torch.Tensor, #[t, 3, nx, ny]
-            y_target: torch.Tensor, #[t, 3, nx, ny]
-            plot_dir: Optional[str] = None,
-            epoch: Optional[int] = None,  # Epoch for file_name
-            pid: Optional[int] = 0,  # Secondary plot ID
-            nsteps: int = 5,
-            stride: int = 1
-        ):
-        """Plots vorticity contours of flow around a cylinder at several time-steps
+        y_pred: torch.Tensor,
+        y_target: torch.Tensor,
+        plot_dir: Optional[str] = None,
+        epoch: Optional[int] = None,
+        pid: Optional[int] = 0,
+        nsteps: int = 10,
+        stride: int = 5
+    ) -> None:
+        """Plots vorticity contours of flow around a cylinder at several time-steps. Vorticity gradients
+        are calculated using standard smoothed central finite difference.
 
         Args:
-            y_pred (torch.Tensor): [T, 3, H, W] Prediction tensor.
-            y_target (torch.Tensor): [T, 3, H, W] Target tensor.
-            plot_dir (Optional[str], optional): Directory to save figure, overrides class plot_dir if provided. Defaults to None.
-            epoch (Optional[int], optional): Current epoch, used for file name. Defaults to None.
-            pid (int, Optional): Optional plotting id for indexing file name manually, Defaults to 0.
-            nsteps (int, Optional): Number of timesteps to plot, Defaults to 10.
-            stride (int, optional): Number of timesteps in between plots. Defaults to 20.
+            y_pred (Tensor): [T, 3, H, W] Prediction tensor.
+            y_target (Tensor): [T, 3, H, W] Target tensor.
+            plot_dir (str, optional): Directory to save figure, overrides class plot_dir if provided. Defaults to None.
+            epoch (int, optional): Current epoch, used for file name. Defaults to None.
+            pid (int, optional): Optional plotting id for indexing file name manually. Defaults to 0.
+            nsteps (int, optional): Number of timesteps to plot. Defaults to 10.
+            stride (int, optional): Number of timesteps in between plots. Defaults to 5.
         """
         @torch.no_grad()
         def xGrad(u, dx=1, padding=(1, 1, 1, 1)):

@@ -18,7 +18,6 @@ Transformers for Modeling Physical Systems [ [ArXiV](https://arxiv.org/abs/2010.
 | Cylinder Flow | - | - |
 | Gray-Scott | - | - |
 | Rossler | Coming Soon | Coming Soon |
-| |  | |
 
 ### Road Map
 

@@ -1,18 +1,17 @@
-'''
+"""
 =====
+Distributed by: Notre Dame SCAI Lab (MIT Liscense)
 - Associated publication:
-url: 
+url: https://arxiv.org/abs/2010.03957
 doi: 
-github: 
+github: https://github.com/zabaras/transformer-physx
 =====
-'''
-import os
-import json
-import logging
+"""
 from collections import OrderedDict
 from .viz_lorenz import LorenzViz
 from .viz_cylinder import CylinderViz
 from .viz_grayscott import GrayScottViz
+from .viz_model import Viz
 
 VIZ_MAPPING = OrderedDict(
     [
@@ -34,7 +33,7 @@ class AutoViz():
         )
 
     @classmethod
-    def init_viz(cls, viz_name:str):
+    def init_viz(cls, viz_name: str) -> Viz:
         """Initializes visualization class.
         Currently supports: "lorenz", "cylinder", "grayscott"
 
@@ -42,7 +41,7 @@ class AutoViz():
             viz_name (str): Keyword/name of visualization class
 
         Raises:
-            AssertionError: If viz_name is not a supported visualization type
+            ValueError: If viz_name is not a supported visualization type
 
         Returns:
             (Viz): Initialized viz class
@@ -51,4 +50,5 @@ class AutoViz():
         if(viz_name in VIZ_MAPPING.keys()):
             return VIZ_MAPPING[viz_name]
         else:
-            raise AssertionError("Un supported visualization type")
+            err_str = "Provided viz name, {:s}, not found in existing visualization classes.".format(viz_name)
+            raise ValueError(err_str)

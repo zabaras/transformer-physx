@@ -41,11 +41,3 @@ trphysx.viz.viz\_model module
    :undoc-members:
    :show-inheritance:
 
-
-Module contents
----------------
-
-.. automodule:: trphysx.viz
-   :members:
-   :undoc-members:
-   :show-inheritance:

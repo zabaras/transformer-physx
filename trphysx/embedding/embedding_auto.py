@@ -84,7 +84,7 @@ class AutoEmbeddingModel:
             config (PhysConfig): Transformer configuration class
 
         Raises:
-            AssertionError: If model_name is not a supported trainer model types
+            ValueError: If model_name is not a supported trainer model types
 
         Returns:
             (EmbeddingTrainer): Initialized embedding model trainer
@@ -96,7 +96,7 @@ class AutoEmbeddingModel:
             model = model_class(config)
         else:
             err_str = "Provided model name, {:s}, not found in existing training models.".format(model_name)
-            raise AssertionError(err_str)
+            raise ValueError(err_str)
 
         return model
 
@@ -112,7 +112,7 @@ class AutoEmbeddingModel:
             epoch (int, optional): Epoch to load model from, only used if function is provided a directory
 
         Raises:
-            AssertionError: If model_name is not a supported model type
+            ValueError: If model_name is not a supported model type
 
         Returns:
             (EmbeddingModel): Initialized embedding model with loaded weights
@@ -124,7 +124,7 @@ class AutoEmbeddingModel:
             model = model_class(config)
         else:
             err_str = "Provided model name, {:s}, not found in existing models.".format(model_name)
-            raise AssertionError(err_str)
+            raise ValueError(err_str)
 
         # Attempt to load model from file.
         if(not file_or_path_directory is None):

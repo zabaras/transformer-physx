@@ -1,12 +1,14 @@
-'''
+"""
 =====
+Distributed by: Notre Dame SCAI Lab (MIT Liscense)
 - Associated publication:
-url: 
+url: https://arxiv.org/abs/2010.03957
 doi: 
-github: 
+github: https://github.com/zabaras/transformer-physx
 =====
-'''
+"""
 import os
+import matplotlib
 import torch
 import numpy as np
 from typing import Optional
@@ -16,7 +18,6 @@ mpl.use('agg')
 import matplotlib.pyplot as plt
 from matplotlib import rc
 from mpl_toolkits.mplot3d import Axes3D
-from matplotlib.collections import LineCollection
 from matplotlib.colors import ListedColormap, BoundaryNorm
 from mpl_toolkits.mplot3d.art3d import Line3DCollection
 from matplotlib.patches import Rectangle
@@ -24,14 +25,16 @@ from matplotlib.legend_handler import HandlerBase
 
 from .viz_model import Viz
 
+Tensor = torch.Tensor
+
 # Interface to LineCollection:
 def _colorline3d(x, y, z, t=None, cmap=plt.get_cmap('viridis'), linewidth=1, alpha=1.0, ax=None):
-    '''
+    """
     Plot a colored line with coordinates x and y
     Optionally specify colors in the array z
     Optionally specify a colormap, a norm function and a line width
     https://stackoverflow.com/questions/52884221/how-to-plot-a-matplotlib-line-plot-using-colormap
-    '''
+    """
     # Default colors equally spaced on [0,1]:
     if t is None:
         t = np.linspace(0.25, 1.0, len(x))
@@ -47,10 +50,17 @@ def _colorline3d(x, y, z, t=None, cmap=plt.get_cmap('viridis'), linewidth=1, alp
     ax.scatter(x, y, z, c=colors, marker='*', alpha=alpha) #Adding line markers
 
 class HandlerColormap(HandlerBase):
-    def __init__(self, cmap, num_stripes=8, **kw):
+    """Class for creating colormap legend rectangles
+
+    Args:
+        cmap (matplotlib.cm): Matplotlib colormap
+        num_stripes (int): Number of countour levels (strips) in rectangle
+    """
+    def __init__(self, cmap: matplotlib.cm, num_stripes: int = 8, **kw):
         HandlerBase.__init__(self, **kw)
         self.cmap = cmap
         self.num_stripes = num_stripes
+
     def create_artists(self, legend, orig_handle,
                        xdescent, ydescent, width, height, fontsize, trans):
         stripes = []
@@ -67,26 +77,26 @@ class LorenzViz(Viz):
     """Visualization class for Lorenz ODE
 
     Args:
-        plot_dir (Optional[str], optional): Directory to save visualizations in. Defaults to None.
+        plot_dir (str, optional): Directory to save visualizations in. Defaults to None.
     """
-    def __init__(self, plot_dir:Optional[str] = None):
+    def __init__(self, plot_dir: str = None) -> None:
         super().__init__(plot_dir=plot_dir)
 
     def plotPrediction(self,
-            y_pred:torch.Tensor,
-            y_target:torch.Tensor,
-            plot_dir:Optional[str] = None,
-            epoch:Optional[int] = None,
-            pid:Optional[int] = 0,
-        ):
+        y_pred: Tensor,
+        y_target: Tensor,
+        plot_dir: str = None,
+        epoch: int = None,
+        pid: int = 0
+    ) -> None:
         """Plots a 3D line of a single Lorenz prediction
 
         Args:
-            y_pred (torch.Tensor): [T, 3] Prediction tensor.
-            y_target (torch.Tensor): [T, 3] Target tensor.
-            plot_dir (Optional[str], optional): Directory to save figure, overrides plot_dir one if provided. Defaults to None.
-            epoch (Optional[int], optional): Current epoch, used for file name. Defaults to None.
-            pid (int, Optional): Optional plotting id for indexing file name manually, Defaults to 0.
+            y_pred (Tensor): [T, 3] Prediction tensor.
+            y_target (Tensor): [T, 3] Target tensor.
+            plot_dir (str, optional): Directory to save figure, overrides plot_dir one if provided. Defaults to None.
+            epoch (int, optional): Current epoch, used for file name. Defaults to None.
+            pid (int, optional): Optional plotting id for indexing file name manually. Defaults to 0.
         """
         # Convert to numpy array
         y_pred = y_pred.detach().cpu().numpy()
@@ -122,22 +132,22 @@ class LorenzViz(Viz):
         self.saveFigure(plot_dir, file_name)
 
     def plotMultiPrediction(self,
-            y_pred: torch.Tensor, # [mb, t, 3]
-            y_target: torch.Tensor, # [mb, t, 3]
-            plot_dir: Optional[str] = None,
-            epoch: Optional[int] = None,  # Epoch for file_name
-            pid: Optional[int] = 0,  # Secondary plot ID
-            nplots:int = 2,
-        ):
+        y_pred: Tensor,
+        y_target: Tensor,
+        plot_dir: str = None,
+        epoch: int = None,
+        pid: int = 0,
+        nplots: int = 2,
+    ) -> None:
         """Plots the 3D lines of multiple Lorenz predictions
 
         Args:
-            y_pred (torch.Tensor): [T, 3] Prediction tensor.
-            y_target (torch.Tensor): [T, 3] Target tensor.
-            plot_dir (Optional[str], optional): Directory to save figure, overrides plot_dir one if provided. Defaults to None.
-            epoch (Optional[int], optional): Current epoch, used for file name. Defaults to None.
-            pid (int, Optional): Optional plotting id for indexing file name manually, Defaults to 0.
-            nplots (int, Optional): Number of cases to plot, Defaults to 2.
+            y_pred (Tensor): [B, T, 3] Prediction tensor.
+            y_target (Tensor): [B, T, 3] Target tensor.
+            plot_dir (str, optional): Directory to save figure, overrides plot_dir one if provided. Defaults to None.
+            epoch (int, optional): Current epoch, used for file name. Defaults to None.
+            pid (int, optional): Optional plotting id for indexing file name manually. Defaults to 0.
+            nplots (int, optional): Number of cases to plot. Defaults to 2.
         """
         assert y_pred.size(0) >= nplots, 'Number of provided predictions is less than the requested number of subplots'
         assert y_target.size(0) >= nplots, 'Number of provided targets is less than the requested number of subplots'
@@ -180,18 +190,19 @@ class LorenzViz(Viz):
         self.saveFigure(plot_dir, file_name)
 
     def plotPredictionScatter(self,
-            y_pred:torch.Tensor,
-            plot_dir:Optional[str] = None,
-            epoch:Optional[int] = None,
-            pid:Optional[int] = 0
-        ):
-        """Plots scatter plots of a Lorenz prediction contoured based on distance from the basins
+        y_pred: Tensor,
+        plot_dir: str = None,
+        epoch: int = None,
+        pid: int = 0
+    ) -> None:
+        """Plots scatter plots of a Lorenz prediction contoured based on distance from the basins.
+        This will only contour correctly for the parameters s=10, r=28, b=2.667
 
         Args:
-            y_pred (torch.Tensor): [T, 3] Prediction tensor.
-            plot_dir (Optional[str], optional): Directory to save figure, overrides plot_dir one if provided. Defaults to None.
-            epoch (Optional[int], optional): Current epoch, used for file name. Defaults to None.
-            pid (int, Optional): Optional plotting id for indexing file name manually, Defaults to 0.
+            y_pred (Tensor): [T, 3] Prediction tensor.
+            plot_dir (str, optional): Directory to save figure, overrides plot_dir one if provided. Defaults to None.
+            epoch (int, optional): Current epoch, used for file name. Defaults to None.
+            pid (int, optional): Optional plotting id for indexing file name manually. Defaults to 0.
         """
         # Convert to numpy array
         y_pred = y_pred.detach().cpu().numpy()

@@ -1,48 +1,40 @@
-'''
+"""
 =====
+Distributed by: Notre Dame SCAI Lab (MIT Liscense)
 - Associated publication:
-url: 
+url: https://arxiv.org/abs/2010.03957
 doi: 
-github: 
+github: https://github.com/zabaras/transformer-physx
 =====
-'''
-import os
+"""
 import torch
 import numpy as np
-from typing import Optional
-import torch.nn.functional as F
-
 import matplotlib as mpl
-
 mpl.use('agg')
 import matplotlib.pyplot as plt
-from matplotlib import rc
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib.collections import LineCollection
-from matplotlib.colors import ListedColormap, BoundaryNorm
-from mpl_toolkits.mplot3d.art3d import Line3DCollection
-from matplotlib.patches import Rectangle
-from matplotlib.legend_handler import HandlerBase
 
 from .viz_model import Viz
+
+Tensor = torch.Tensor
 
 class GrayScottViz(Viz):
     """Visualization class for the 3D Gray-scott system.
 
     Args:
-        plot_dir (Optional[str], optional): Directory to save visualizations in. Defaults to None.
+        plot_dir (str, optional): Directory to save visualizations in. Defaults to None.
     """
-    def __init__(self, plot_dir: Optional[str] = None):
+    def __init__(self, plot_dir: str = None) -> None:
         """Constructor method
         """
         super().__init__(plot_dir=plot_dir)
 
     def _createColorBarVertical(self, fig, ax0, c_min, c_max, label_format="{:02.2f}", cmap='viridis'):
-
+        """Util method for plotting a colorbar next to a subplot
+        """
         p0 = ax0[0].get_position().get_points().flatten()
         p1 = ax0[-1].get_position().get_points().flatten()
         ax_cbar = fig.add_axes([p1[2] + 0.01, p1[1], 0.0075, p0[3] - p1[1]])
-        # ax_cbar = fig.add_axes([p0[0], p0[1]-0.075, p0[2]-p0[0], 0.02])
+
         ticks = np.linspace(0, 1, 5)
         tickLabels = np.linspace(c_min, c_max, 5)
         tickLabels = [label_format.format(t0) for t0 in tickLabels]
@@ -50,25 +42,24 @@ class GrayScottViz(Viz):
         cbar.set_ticklabels(tickLabels)
 
     def plotPrediction(self,
-            y_pred: torch.Tensor,
-            y_target: torch.Tensor,
-            plot_dir: Optional[str] = None,
-            epoch: Optional[int] = None,  # Epoch for file_name
-            pid: Optional[int] = 0,  # Secondary plot ID
-            nsteps: int = 10,
-            stride: int = 5
-        ):
+        y_pred: torch.Tensor,
+        y_target: torch.Tensor,
+        plot_dir: str = None,
+        epoch: int = None,
+        pid: int = 0,
+        nsteps: int = 10,
+        stride: int = 5
+    ) -> None:
         """Plots z-slice of Gray-Scott prediction along the z-axis and saves to file
 
         Args:
             y_pred (torch.Tensor): [T, 2, H, W, D] prediction time-series of states
             y_target (torch.Tensor): [T, 2, H, W, D] target time-series of states
-            plot_dir (str, optional): Directory to save plots to. If none is provided the class plot_dir is used,
-                defaults to None
-            epoch (int, optional): Current epoch for file name, defaults to None
-            pid (int, optional): Secondary plotting index value for filename, defaults to 0
-            nsteps (int, optional): Number of time-steps to plot, defaults to 5
-            stride (int, optional): Number of timesteps in between plots, defaults to 1
+            plot_dir (str, optional): Directory to save figure, overrides class plot_dir if provided. Defaults to None.
+            epoch (int, optional): Current epoch, used for file name. Defaults to None.
+            pid (int, optional): Optional plotting id for indexing file name manually. Defaults to 0.
+            nsteps (int, optional): Number of timesteps to plot. Defaults to 10.
+            stride (int, optional): Number of timesteps in between plots. Defaults to 5.
         """
         if plot_dir is None:
             plot_dir = self.plot_dir
@@ -79,9 +70,6 @@ class GrayScottViz(Viz):
         plt.close('all')
         mpl.rcParams['font.family'] = ['serif']  # default is sans-serif
         mpl.rcParams['figure.dpi'] = 200
-        # mpl.rcParams['xtick.labelsize'] = 2
-        # mpl.rcParams['ytick.labelsize'] = 2
-        # rc('text', usetex=True)
 
         nz = y_pred.shape[-1]
         # Set up figure
