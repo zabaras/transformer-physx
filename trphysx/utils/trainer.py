@@ -10,16 +10,15 @@ github: https://github.com/zabaras/transformer-physx
 import sys
 import os
 import logging
-import h5py
 import torch
 import torch.nn as nn
 import numpy as np
 
-from typing import Any, Union, Dict, Optional, Tuple
+from typing import Any, Dict, Tuple
 from torch.utils.data import Dataset, DataLoader, RandomSampler, SequentialSampler
 from ..transformer.phys_transformer_helpers import PhysformerTrain
 from ..config.args import  TrainingArguments
-from ..data_utils.data_utils import DataCollator, EvalDataCollator
+from ..data_utils.data_utils import DataCollator
 from ..viz.viz_model import Viz
 from ..embedding.embedding_model import EmbeddingModel
 from .metrics import Metrics
@@ -147,7 +146,7 @@ class Trainer:
 
         sampler = SequentialSampler(eval_dataset)
 
-        data_collator = EvalDataCollator()
+        data_collator = DataCollator()
 
         data_loader = DataLoader(
             eval_dataset,

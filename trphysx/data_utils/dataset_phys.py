@@ -1,11 +1,12 @@
-'''
+"""
 =====
+Distributed by: Notre Dame SCAI Lab (MIT Liscense)
 - Associated publication:
-url: 
+url: https://arxiv.org/abs/2010.03957
 doi: 
-github: 
+github: https://github.com/zabaras/transformer-physx
 =====
-'''
+"""
 import logging
 import os
 import pickle
@@ -13,27 +14,24 @@ import time
 import h5py
 
 import torch
-from typing import Dict, List, NewType, Tuple, Optional
-from dataclasses import dataclass
+from typing import Dict
 from abc import abstractmethod
-from collections import OrderedDict
 from filelock import FileLock
 from torch.utils.data.dataset import Dataset
-
 from ..embedding.embedding_model import EmbeddingModel
 
 logger = logging.getLogger(__name__)
 
 class PhysicalDataset(Dataset):
-    """Parent class for various datasets.
+    """Parent class for training and evaluation datasets for physical transformers.
     The caching of the dataset is based on the Hugging Face implementation.
 
     Args:
-        embedder (:class:`trphysx.embedding.embedding_model.EmbeddingModel`): Embedding neural network
+        embedder (EmbeddingModel): Embedding neural network
         file_path (str): Path to hdf5 raw data file
         block_size (int): Length of time-series blocks for training
         stride (int, optional): Stride interval to sample blocks from the raw time-series. Defaults to 1.
-        ndata (int, optional): Number of time-series from the HDF5 file to use (not necessary equal to the number of time-series blocks). Defaults to -1.
+        ndata (int, optional): Number of time-series from the HDF5 file to block. Will use all if negative. Defaults to -1.
         eval (bool, optional): If this is a eval data-set, which will provide target states. Defaults to False.
         overwrite_cache (bool, optional): Overwrite cache file if it exists, i.e. embed the raw data from file. Defaults to False.
         cache_path (str, optional): Path to save the cached embeddings at. Defaults to None.
@@ -43,21 +41,21 @@ class PhysicalDataset(Dataset):
         embedder: EmbeddingModel,
         file_path: str,
         block_size: int,
-        stride:int = 1,
-        ndata:int = -1,
-        patch_size:int = 1, # Patch size, used for the vizgpt2 model
-        eval:bool = False, # Save physical states as well (used for testing)
-        overwrite_cache:bool = False,
-        cache_path:Optional[str] = None
+        stride: int = 1,
+        ndata: int = -1,
+        eval: bool = False,
+        overwrite_cache: bool = False,
+        cache_path: str = None,
+        **kwargs
     ):
         """Constructor method
         """
-        self.block_size = block_size + patch_size # Add patch_size because initial state is not predicted
+        assert os.path.isfile(file_path), 'Provided data file path does not exist!'
+
+        self.block_size = block_size
         self.stride = stride
         self.ndata = ndata
-        self.patch_size = patch_size
         self.eval = eval
-        assert os.path.isfile(file_path), 'Provided data file path does not exist!'
 
         directory, filename = os.path.split(file_path)
         if cache_path is None or not os.path.isdir(cache_path):
@@ -84,9 +82,8 @@ class PhysicalDataset(Dataset):
                 self.examples = []
                 self.states = []
                 # Read file and embed data using embedding model
-                # TODO: Speed up the embedding process if possible
                 with h5py.File(file_path, "r") as f:
-                    self.embed_data(f, embedder)
+                    self.embed_data(f, embedder, **kwargs)
 
                 start = time.time()
                 os.makedirs(cache_path, exist_ok=True)
@@ -97,16 +94,13 @@ class PhysicalDataset(Dataset):
                 )
 
     @abstractmethod
-    def embed_data(self, h5_file: h5py.File, embedder: EmbeddingModel, save_states: bool = False):
+    def embed_data(self, h5_file: h5py.File, embedder: EmbeddingModel):
         """Embeds raw physical data into a 1D vector representation for the transformer.
         This is problem specific and thus must be overridden.
 
-        TODO: Remove redundant arguments
-
         Args:
             h5_file (h5py.File): HDF5 file object to read raw data from
-            embedder (:class:`trphysx.embedding.embedding_model.EmbeddingModel`): Embedding neural network
-            save_states (bool, optional): To save the physical states or not, should be True for validation and testing. Defaults to False.
+            embedder (EmbeddingModel): Embedding neural network
 
         Raises:
             NotImplementedError: If function has not been overridden by a child dataset class.
@@ -117,7 +111,9 @@ class PhysicalDataset(Dataset):
         return len(self.examples)
 
     def __getitem__(self, i) -> Dict[str, torch.Tensor]:
-        if not self.eval:
-            return {'inputs_embeds': self.examples[i][:-1], 'labels_embeds': self.examples[i][1:]}
-        else:
+        # Eval dataset need to return states
+        if self.eval:
             return {'inputs_embeds': self.examples[i][:1], 'labels_embeds': self.examples[i], 'states': self.states[i]}
+        else:
+            return {'inputs_embeds': self.examples[i][:-1], 'labels_embeds': self.examples[i][1:]}
+            

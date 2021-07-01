@@ -1,11 +1,12 @@
-'''
+"""
 =====
+Distributed by: Notre Dame SCAI Lab (MIT Liscense)
 - Associated publication:
-url: 
+url: https://arxiv.org/abs/2010.03957
 doi: 
-github: 
+github: https://github.com/zabaras/transformer-physx
 =====
-'''
+"""
 import logging
 import h5py
 import torch
@@ -17,19 +18,20 @@ logger = logging.getLogger(__name__)
 class GrayscottDataset(PhysicalDataset):
     """Dataset class for the Gray-scott numerical example.
     """
-    def embed_data(self, h5_file: h5py.File, embedder: EmbeddingModel, save_states: bool = False):
-        """Embeds cylinder flow data into a 1D vector representation for the transformer.
+    def embed_data(self, h5_file: h5py.File, embedder: EmbeddingModel):
+        """Embeds gray-scott data into a 1D vector representation for the transformer.
 
-        TODO: Remove redundant arguments, add minibatch option for the encoding
+        TODO: Clean up and remove custom positions
 
         Args:
-            h5_file (h5py.File): HDF5 file object of Lorenz raw data
-            embedder (:class:`trphysx.embedding.embedding_model.EmbeddingModel`): Embedding neural network
-            save_states (bool, optional): To save the physical states or not, should be True for validation and testing. Defaults to False.
+            h5_file (h5py.File): HDF5 file object of raw data
+            embedder (EmbeddingModel): Embedding neural network
         """
         # Iterate through stored time-series
         samples = 0
         embedder.eval()
+
+        self.position_ids = []
 
         logger.info('Parsing hdf5 file and embedding data, this could take a bit...')
         # Loop simulations
@@ -49,22 +51,27 @@ class GrayscottDataset(PhysicalDataset):
             # Stride over time-series
             for i in range(0, data_series.size(0) - self.block_size + 1, self.stride):  # Truncate in block of block_size
                 data_series0 = embedded_series[i: i + self.block_size]
+                
                 self.examples.append(data_series0)
                 self.position_ids.append(torch.arange(0, self.block_size, dtype=torch.long)+i)
-                if save_states:
+
+                if self.eval:
                     self.states.append(data_series[i: i + self.block_size].cpu())
 
             samples = samples + 1
             if self.ndata > 0 and samples >= self.ndata:  # If we have enough time-series samples break loop
                 break
 
-        logger.info('Collected {:d} time-series from hdf5 file for a total of {:d} time-series.'.format(samples, len(self.examples)))
+        logger.info(
+            'Collected {:d} time-series from hdf5 file. Total of {:d} time-series.'.format(samples, len(self.examples))
+            )
 
 
 class GrayscottPredictDataset(GrayscottDataset):
     """Prediction data-set for the flow around a cylinder numerical example. Used during testing/validation
     since this data-set will store the embedding model and target states.
-    TODO: Use mix-in for recover and get item methods?
+    
+    TODO: Remove this and have an overloaded trainer class for gray-scott
 
     Args:
         embedder (:class:`trphysx.embedding.embedding_model.EmbeddingModel`): Embedding neural network
