@@ -23,8 +23,8 @@ logger = logging.getLogger(__name__)
 Optimizer = torch.optim.Optimizer
 Scheduler = torch.optim.lr_scheduler._LRScheduler
 
-def set_seed(seed: int):
-    """Set random see
+def set_seed(seed: int) -> None:
+    """Set random seed
 
     Args:
         seed (int): random seed
@@ -39,7 +39,7 @@ class EmbeddingTrainer:
     Args:
         model (EmbeddingTrainingHead): Embedding training model
         args (TrainingArguments): Training arguments
-        optimizers (Tuple[Optimizer, Scheduler]): Tuple of Pytorch optimizer and lr scheduler. Defaults to None.
+        optimizers (Tuple[Optimizer, Scheduler]): Tuple of Pytorch optimizer and lr scheduler.
         viz (Viz, optional): Visualization class. Defaults to None.
     """
     def __init__(self,

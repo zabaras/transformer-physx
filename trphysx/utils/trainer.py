@@ -1,11 +1,12 @@
-'''
+"""
 =====
+Distributed by: Notre Dame SCAI Lab (MIT Liscense)
 - Associated publication:
-url: 
+url: https://arxiv.org/abs/2010.03957
 doi: 
-github: 
+github: https://github.com/zabaras/transformer-physx
 =====
-'''
+"""
 import sys
 import os
 import logging
@@ -20,35 +21,47 @@ from ..transformer.phys_transformer_helpers import PhysformerTrain
 from ..config.args import  TrainingArguments
 from ..data_utils.data_utils import DataCollator, EvalDataCollator
 from ..viz.viz_model import Viz
+from ..embedding.embedding_model import EmbeddingModel
 from .metrics import Metrics
 
 logger = logging.getLogger(__name__)
 
-def set_seed(seed: int):
-    # random.seed(seed)
+Optimizer = torch.optim.Optimizer
+Scheduler = torch.optim.lr_scheduler._LRScheduler
+Tensor = torch.Tensor
+
+def set_seed(seed: int) -> None:
+    """Set random seed
+
+    Args:
+        seed (int): random seed
+    """
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
 
 class Trainer:
-    """Trainer for physics transformer model
+    """Generalized trainer for physics transformer models
 
     Args:
-        model (PhysformerTrain): Transformer
-        args (TrainingArguments): Training arguements
-        optimizers (Tuple[torch.optim.Optimizer, torch.optim.lr_scheduler.LambdaLR], optional): Tuple of pytorch optimizer and lr scheduler. Defaults to None.
-        train_dataset (Optional[Dataset], optional): Training dataset. Defaults to None.
-        eval_dataset (Optional[Dataset], optional): Eval/Validation dataset. Defaults to None.
-        viz (Optional[Viz], optional): Visualization class. Defaults to None.
+        model (PhysformerTrain): Transformer with training head
+        args (TrainingArguments): Training arguments
+        optimizers (Tuple[Optimizer, Scheduler], optional): Tuple of Pytorch optimizer and lr scheduler.
+        train_dataset (Dataset, optional): Training dataset. Defaults to None.
+        eval_dataset (Dataset, optional): Eval/Validation dataset. Defaults to None.
+        embedding_model (EmbeddingModel, optional): Embedding model. Used for recovering states during
+            state evaluation of the model. Defaults to None.
+        viz (Viz, optional): Visualization class. Defaults to None.
     """
     def __init__(self,
-            model: PhysformerTrain,
-            args: TrainingArguments,
-            optimizers: Tuple[torch.optim.Optimizer, torch.optim.lr_scheduler.LambdaLR] = None,
-            train_dataset: Optional[Dataset] = None,
-            eval_dataset: Optional[Dataset] = None,
-            viz: Optional[Viz] = None,
-        ):
+        model: PhysformerTrain,
+        args: TrainingArguments,
+        optimizers: Tuple[Optimizer, Scheduler],
+        train_dataset: Dataset = None,
+        eval_dataset: Dataset = None,
+        embedding_model: EmbeddingModel = None,
+        viz: Viz = None,
+    ) -> None:
         
         self.model = model.to(args.src_device)
         self.args = args
@@ -56,6 +69,7 @@ class Trainer:
         self.eval_dataset = eval_dataset
         self.optimizers = optimizers
         self.log_metrics = Metrics(file_name = os.path.join(self.args.exp_dir, "log_metrics.h5"))
+        self.embedding_model = embedding_model
         self.viz = viz
 
         # Load pre-trained state dictionaries if necessary
@@ -76,12 +90,23 @@ class Trainer:
 
         set_seed(self.args.seed)
 
-    # TODO: Think about moving these to data_utils file....
-    def get_train_dataloader(self, train_dataset: Optional[Dataset] = None) -> DataLoader:
-        if self.train_dataset is None:
-            raise ValueError("Trainer: training requires a train_dataset.")
+    
+    def get_train_dataloader(self, train_dataset: Dataset = None) -> DataLoader:
+        """Creates a training dataloader. Overload for unusual training cases.
 
+        Args:
+            train_dataset (Dataset, optional): Optional training dataset. If none is provided,
+            the class training data will be used. Defaults to None.
+
+        Raises:
+            ValueError: If both the dataset parameter and class dataset have not been provided
+
+        Returns:
+            DataLoader: Training dataloader
+        """
         train_dataset = train_dataset if train_dataset is not None else self.train_dataset
+        if train_dataset is None:
+            raise ValueError("Training dataset not provided.")
 
         train_batch_size = len(train_dataset) if self.args.train_batch_size > len(
             train_dataset) else self.args.train_batch_size
@@ -100,11 +125,22 @@ class Trainer:
 
         return data_loader
 
-    def get_eval_dataloader(self, eval_dataset: Optional[Dataset] = None) -> DataLoader:
-        if eval_dataset is None and self.eval_dataset is None:
-            raise ValueError("Trainer: evaluation requires an eval_dataset.")
+    def get_eval_dataloader(self, eval_dataset: Dataset = None) -> DataLoader:
+        """Creates a evaluation dataloader used for validation or testing of model.
 
+        Args:
+            eval_dataset (Dataset, optional): Optional eval dataset. If none is provided,
+            the class eval data will be used. Defaults to None.
+
+        Raises:
+            ValueError: If both the dataset parameter and class dataset have not been provided
+
+        Returns:
+            DataLoader: Evaluation dataloader
+        """
         eval_dataset = eval_dataset if eval_dataset is not None else self.eval_dataset
+        if eval_dataset is None:
+            raise ValueError("Evaluation dataset not provided.")
 
         eval_batch_size = len(eval_dataset) if self.args.eval_batch_size > len(
             eval_dataset) else self.args.eval_batch_size
@@ -124,16 +160,14 @@ class Trainer:
         return data_loader
 
     def train(self):
-        """
-        Trains the transformer model
-        TODO: Add loading of optimizer and scheduler
+        """Trains the transformer model
         """
         optimizer = self.optimizers[0]
         lr_scheduler = self.optimizers[1]
 
         model = self.model
 
-        # Set up model parellize if available
+        # Set up model parallelize if available
         # multi-gpu training
         if self.args.n_gpu > 1:
             logger.info('Using {:d} GPUs to train.'.format(self.args.n_gpu))
@@ -149,38 +183,39 @@ class Trainer:
             )
 
         # Loop over epochs
-        tr_loss = 0.0
+        training_loader = self.get_train_dataloader()
         for epoch in range(self.args.epoch_start+1, self.args.epochs + 1):
             
-            training_loader = self.get_train_dataloader()
             self.args.gradient_accumulation_steps = min([self.args.gradient_accumulation_steps, len(training_loader)])
             
             loss_total = 0.0
             model.zero_grad()
+            # Loop over mini-batched
             for mbidx, inputs in enumerate(training_loader):
                 
-                loss0, _, _ =  self._training_step(model, inputs)
+                loss0, _, _ =  self.training_step(model, inputs)
 
-                tr_loss = tr_loss + loss0
                 loss_total = loss_total + loss0/len(training_loader)
 
+                # Optimize model
                 if (mbidx + 1) % self.args.gradient_accumulation_steps == 0 or mbidx == len(training_loader)-1:
                     torch.nn.utils.clip_grad_norm_(model.parameters(), self.args.max_grad_norm)
 
                     optimizer.step()
                     lr_scheduler.step(epoch + float(mbidx) / len(training_loader))
                     model.zero_grad()
-                    tr_loss = 0
-                    # self.global_step += 1
+                    
                     self.epoch = epoch + (mbidx + 1.) / len(training_loader)
 
             for param_group in optimizer.param_groups:
                 cur_lr = param_group['lr']
                 break
+
             logger.info("Current Learning rate: {:.05f}".format(cur_lr))
             logger.info("Epoch {:d}: Training loss {:.05f}".format(epoch, loss_total))
             self.log_metrics.push(epoch=epoch, loss=loss_total)
 
+            # Evaluate model
             if(epoch % self.args.eval_steps == 0 or epoch == 1):
                 for param_group in optimizer.param_groups:
                     cur_lr = param_group['lr']
@@ -189,6 +224,7 @@ class Trainer:
                 logger.info('Evaluating...')
                 self.evaluate(epoch=epoch)
 
+            # Checkpointing model
             if epoch % self.args.save_steps == 0 or epoch == 1:
                 # In all cases (even distributed/parallel), self.model is always a reference
                 # to the model we want to save.
@@ -208,127 +244,130 @@ class Trainer:
         self.log_metrics.writeToHDF5(os.path.join(self.args.exp_dir, "log_metrics.h5"))
 
 
-    def _training_step(self, model: PhysformerTrain, inputs: Dict[str, Union[torch.Tensor, Any]]) -> float:
-        """Trains a single time-step
+    def training_step(self, model: PhysformerTrain, inputs: Dict[str, Any]) -> Tuple[float, Tensor, Tensor]:
+        """Calls a forward pass of the training model and backprops 
+        for a single time-step
 
         Args:
-            model (PhysformerTrain): Transformer model
-            inputs (Dict[str, Union[torch.Tensor, Any]]): Dictionary of model keyword arguments
+            model (PhysformerTrain): Transformer model with training head, could be 
+            inputs (Dict[str, Any]): Dictionary of model inputs for forward pass
 
         Returns:
-            (tuple): tuple containing:
-                hidden_states), (attentions)
-                | (float): Training loss
-                | (torch.Tensor): Hidden states from transformer
-                | (torch.Tensor): Attention states from transformer
+            Tuple[float, Tensor, Tensor]: Tuple containing: loss value, hidden states
+                of transformer, attention states of the transformer.
         """
         model.train()
         for k, v in inputs.items():
             if isinstance(v, torch.Tensor):
                 inputs[k] = v.to(self.args.src_device)
 
+        # Training head forward
         outputs = model(**inputs)
-        loss = outputs[0]  # model outputs are always tuple in transformers (see doc)
+        loss = outputs[0] # Loss value is always the first output
 
         if self.args.n_gpu > 1:
             loss = loss.mean()  # mean() to average on multi-gpu parallel training
         if self.args.gradient_accumulation_steps > 1:
             loss = loss / self.args.gradient_accumulation_steps
         
+        # Backward
         loss.backward()
 
         return loss.item(), outputs[1], outputs[2]
 
     @torch.no_grad()
-    def evaluate(self, eval_dataset: Optional[Dataset] = None, epoch:Optional[int] = None) -> Dict[str, float]:
+    def evaluate(self, epoch: int = None) -> Dict[str, float]:
         """Run evaluation and return metrics.
 
         Args:
-            eval_dataset (Optional[Dataset], optional): Pass a dataset if you wish to override the 
-                one on the instance. Defaults to None.
-            epoch (Optional[int], optional): Current epoch, used for naming figures. Defaults to None.
+            epoch (int, optional): Current epoch, used for naming figures. Defaults to None.
 
         Returns:
             Dict[str, float]: Dictionary of prediction metrics
         """
-        eval_dataloader = self.get_eval_dataloader(eval_dataset)
+
+        eval_dataloader = self.get_eval_dataloader()
         self.model.eval()
-        pred_error = 0
+
+        eval_error = 0
+        state_error = 0
         timestep_error = None
-        mseLoss = nn.MSELoss(reduction='none') # Manual summing
+
         for mbidx, inputs in enumerate(eval_dataloader):
 
-            target_states = inputs['targets'].to(self.args.src_device)
-            del inputs['targets']
-            for k, v in inputs.items():
-                if isinstance(v, torch.Tensor):
-                    inputs[k] = v.to(self.args.src_device)
+            states = inputs['states'].to(self.args.src_device)
+            del inputs['states']
 
-            if timestep_error is None:
-                timestep_error = torch.zeros(inputs['inputs_embeds'].size(1))
+            if mbidx == 0:
+                timestep_error = torch.zeros(inputs['inputs_embeds'].size(1))            
 
-            output_embeds = self.model.generate(inputs, max_length=target_states.size(1), position_ids=None)
-            # Recover features, note we have to move the time-dim into the batch before feeding it
-            # into the recovery model.
-            output = eval_dataloader.dataset.recover(output_embeds.reshape(-1, output_embeds.size(-1)))
-            output = output.view([inputs['inputs_embeds'].size(0), -1] + list(output.shape[1:]))
+            pred_error0, timestep_error0, pred_embeds = self.eval_step()
 
-            # For generation there is no shift!
-            # The outputs includes the first step
-            if mbidx == 0 and self.viz:
-                self.viz.plotPrediction(output[0], target_states[0], self.args.plot_dir, epoch=epoch, pid=0)
-                self.viz.plotPrediction(output[-1], target_states[-1], self.args.plot_dir, epoch=epoch, pid=1)
-                # self.viz.plotPrediction(output[2,:512,:3], targets[2,:512,:3], self.args.plot_dir, epoch=epoch, pid=2)
-                # self.viz.plotPrediction(output[3,:512,:3], targets[3,:512,:3], self.args.plot_dir, epoch=epoch, pid=3)
+            eval_error += pred_error0/len(eval_dataloader)
+            timestep_error += timestep_error0/len(eval_dataloader)
 
-            endIdx = min([output.size(1), target_states.size(1)])
-            pred_error = pred_error + mseLoss(output[:, :endIdx], target_states[:, :endIdx]).mean().item()/len(eval_dataloader)
-            # Compute error as a function of time-steps
-            dims = np.delete(np.arange(0, len(output.shape), 1 , dtype=np.uint8), 1)
-            # timestep_error = timestep_error + mseLoss(output[:,:endIdx], target_states[:,:endIdx]).mean(dim=tuple(dims)).cpu()/len(eval_dataloader)
-            
+            state_error0 = self.eval_states(pred_embeds, states, epoch)
+            state_error += state_error0/len(eval_dataloader)
 
-        logger.info('Test loss: {:.02f}'.format(pred_error))
-        self.log_metrics.push(eval_epoch=epoch, eval_loss=pred_error)
+        logger.info('Eval embedding error: {:.02f}, State error: {:.02f}'.format(eval_error, state_error))
+        self.log_metrics.push(eval_epoch=epoch, eval_error=eval_error, state_error=state_error)
         self.log_metrics.time_error = timestep_error.cpu().numpy()
 
-        return {'pred_error': pred_error}
+        return {'eval_error': eval_error}
 
     @torch.no_grad()
-    def evaluate_error(
-            self, eval_dataset: Optional[Dataset] = None, epoch: Optional[int] = None) -> Dict:
-        """Run evaluation and return metrics.
-        TODO: Make sure not used ans remove
-        The calling script will be responsible for providing a method to compute metrics, as they are
-        task-dependent.
+    def eval_step(self, model: PhysformerTrain, inputs: Dict[str, Any]) -> Tuple[float, Tensor, Tensor]:
+        """Calls a eval pass of the training model.
 
         Args:
-            eval_dataset (Optional[Dataset], optional): Pass a dataset if you wish to override the 
-                one on the instance. Defaults to None.
-            epoch (Optional[int], optional): Current epoch, used for naming figures. Defaults to None.
+            model (PhysformerTrain): Transformer model with training head
+            inputs (Dict[str, Any]): Dictionary of model inputs for forward pass
 
         Returns:
-            Dict[str, float]: Dictionary of prediction metrics
+            Tuple[float, Tensor, Tensor]: Tuple containing: prediction error value, 
+                time-step error, predicted embeddings.
         """
-        eval_dataloader = self.get_eval_dataloader(eval_dataset)
-        self.model.eval()
-        pred_error = 0
-        timestep_error = None
-        mseLoss = nn.MSELoss(reduction='none')  # Manual summing
-        for mbidx, inputs in enumerate(eval_dataloader):
+        for k, v in inputs.items():
+            if isinstance(v, torch.Tensor):
+                inputs[k] = v.to(self.args.src_device)
 
-            inputs_embeds = inputs['inputs_embeds'][:, :1].to(self.args.src_device)
-            targets = eval_dataloader.dataset.recover(inputs['inputs_embeds']).to(self.args.src_device)
+        # Training head forward
+        outputs = self.model.evaluate(**inputs)
+        pred_error = outputs[0] # Loss value is always the first output
+        
+        # Compute loss at each time-step
+        mseLoss = nn.MSELoss(reduction='none') # Manual summing
+        timestep_error = mseLoss(outputs[1], outputs[2]).mean(dim=tuple(0,2)).cpu()
 
-            if timestep_error is None:
-                timestep_error = torch.zeros(inputs['inputs_embeds'].size(1)).to(self.args.src_device)
+        return pred_error, timestep_error, outputs[1]
 
-            output_embeds = self.model.generate(inputs_embeds, max_length=targets.size(1))
+    @torch.no_grad()
+    def eval_states(self, pred_embeds: Tensor, states: Any, epoch: int = None, plot: bool = True) -> float:
+        """Evaluates the predicted states by recovering the state space from
+        the predicted embedding vectors. Can be overloaded for cases with
+        special methods for recovering the state field.
 
-            output = eval_dataloader.dataset.recover(output_embeds)
+        Args:
+            pred_embeds (Tensor): Predicted embedded vectors
+            states (Any): Target states / data for recovery 
+            epoch (int, optional): Current epoch, used for naming figures. Defaults to None.
+            plot (bool, optional): Plot models states. Defaults to True.
 
-            endIdx = min([output.size(1), targets.size(1)])
-            pred_error = pred_error + mseLoss(output[:, :endIdx, :3], targets[:, :endIdx, :3]).mean().item() / len(eval_dataloader)
-            timestep_error = timestep_error + mseLoss(output[:, :endIdx, :3], targets[:, :endIdx, :3]).mean(dim=(0, 2)) / len(eval_dataloader)
+        Returns:
+            float: Predicted state MSE error
+        """
+        logger.warning('Eval states has not been overloaded.')
 
-        return {'pred_error': pred_error, 'time_error': timestep_error}
+        bsize = pred_embeds.size(0)
+        tsize = pred_embeds.size(1)
+        device = self.embedding_model.devices[0]
+        
+        x_in = pred_embeds.contiguous().view(-1, pred_embeds.size(-1)).to(device)
+        out = self.embedder.recover(x_in)
+        out = out.view([bsize, tsize] + self.embedding_model.input_dims)
+
+        if self.viz:
+            self.viz.plotPrediction(out[0], states[0], self.args.plot_dir, epoch=epoch, pid=0)
+            self.viz.plotPrediction(out[-1], states[-1], self.args.plot_dir, epoch=epoch, pid=1)
+
+        return 0

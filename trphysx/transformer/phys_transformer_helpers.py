@@ -18,16 +18,16 @@ class PhysformerTrain(PhysformerBase):
         self.transformer.apply(self._init_weights)
 
     def forward(
-            self,
-            inputs_embeds=None,
-            labels_embeds=None,
-            prop_embeds=None,
-            past=None,
-            attention_mask=None,
-            position_ids=None,
-            head_mask=None,
-            use_cache=True,
-            output_attentions=None,
+        self,
+        inputs_embeds=None,
+        labels_embeds=None,
+        prop_embeds=None,
+        past=None,
+        attention_mask=None,
+        position_ids=None,
+        head_mask=None,
+        use_cache=True,
+        output_attentions=None,
     ):
         """
         Forward method for this head calculates the MSE between the predicted time-series and target embeddings
@@ -56,6 +56,42 @@ class PhysformerTrain(PhysformerBase):
             outputs = (loss,) + (hidden_states, labels_embeds,) + outputs[1:]
 
         return outputs # (loss), last hidden state, (presents), (all hidden_states), (attentions)
+
+    def evaluate(
+        self,
+        inputs_embeds,
+        labels_embeds,
+        prop_embeds=None,
+        past=None,
+        attention_mask=None,
+        position_ids=None,
+        head_mask=None,
+        use_cache=True,
+        output_attentions=False,
+    ):
+        max_length = labels_embeds.size(1)
+
+        outputs = self.transformer.generate(
+            inputs_embeds=inputs_embeds,
+            max_length = max_length,
+            past=past,
+            attention_mask=attention_mask,
+            position_ids=position_ids,
+            prop_embeds=prop_embeds,
+            head_mask=head_mask,
+            use_cache=use_cache,
+            output_attentions=output_attentions,
+        )
+
+        pred_embeds = outputs[0]
+
+        # Flatten the tokens
+        err_fct = nn.MSELoss()
+        error = err_fct(pred_embeds, labels_embeds)
+
+        outputs = (error,) + (pred_embeds, labels_embeds,) + outputs[1:]
+
+        return outputs
 
     def generate(self, *args, **kwargs):
         '''

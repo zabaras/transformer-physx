@@ -34,7 +34,7 @@ class PhysicalDataset(Dataset):
         block_size (int): Length of time-series blocks for training
         stride (int, optional): Stride interval to sample blocks from the raw time-series. Defaults to 1.
         ndata (int, optional): Number of time-series from the HDF5 file to use (not necessary equal to the number of time-series blocks). Defaults to -1.
-        save_states (bool, optional): To save the physical states or not, should be True for validation and testing. Defaults to False.
+        eval (bool, optional): If this is a eval data-set, which will provide target states. Defaults to False.
         overwrite_cache (bool, optional): Overwrite cache file if it exists, i.e. embed the raw data from file. Defaults to False.
         cache_path (str, optional): Path to save the cached embeddings at. Defaults to None.
     """
@@ -46,7 +46,7 @@ class PhysicalDataset(Dataset):
         stride:int = 1,
         ndata:int = -1,
         patch_size:int = 1, # Patch size, used for the vizgpt2 model
-        save_states:bool = False, # Save physical states as well (used for testing)
+        eval:bool = False, # Save physical states as well (used for testing)
         overwrite_cache:bool = False,
         cache_path:Optional[str] = None
     ):
@@ -56,6 +56,7 @@ class PhysicalDataset(Dataset):
         self.stride = stride
         self.ndata = ndata
         self.patch_size = patch_size
+        self.eval = eval
         assert os.path.isfile(file_path), 'Provided data file path does not exist!'
 
         directory, filename = os.path.split(file_path)
@@ -85,10 +86,8 @@ class PhysicalDataset(Dataset):
                 # Read file and embed data using embedding model
                 # TODO: Speed up the embedding process if possible
                 with h5py.File(file_path, "r") as f:
-                    self.embed_data(f, embedder, save_states)
+                    self.embed_data(f, embedder)
 
-                if not save_states:
-                    self.states = None
                 start = time.time()
                 os.makedirs(cache_path, exist_ok=True)
                 with open(cached_features_file, "wb") as handle:
@@ -118,4 +117,7 @@ class PhysicalDataset(Dataset):
         return len(self.examples)
 
     def __getitem__(self, i) -> Dict[str, torch.Tensor]:
-        return {'inputs_embeds': self.examples[i][:-1], 'labels_embeds': self.examples[i][1:]}
+        if not self.eval:
+            return {'inputs_embeds': self.examples[i][:-1], 'labels_embeds': self.examples[i][1:]}
+        else:
+            return {'inputs_embeds': self.examples[i][:1], 'labels_embeds': self.examples[i], 'states': self.states[i]}

@@ -1,11 +1,12 @@
-'''
+"""
 =====
+Distributed by: Notre Dame SCAI Lab (MIT Liscense)
 - Associated publication:
-url: 
+url: https://arxiv.org/abs/2010.03957
 doi: 
-github: 
+github: https://github.com/zabaras/transformer-physx
 =====
-'''
+"""
 import os
 import logging
 import h5py
@@ -20,7 +21,7 @@ class Metrics:
     """
     file_name:str = "log_metrics.hdf5"
 
-    def push(self, **kwargs):
+    def push(self, **kwargs) -> None:
         """Pushes elements in kwargs into the attributes of this class
 
         Args:
@@ -36,7 +37,7 @@ class Metrics:
             else:
                 setattr(self, key, [value])
 
-    def writeToHDF5(self, file_name):
+    def writeToHDF5(self, file_name: str) -> None:
         """Write the classes attributes to HDF% file
 
         Args:
@@ -53,7 +54,7 @@ class Metrics:
                     value = data0 + value
                 f.create_dataset(attr, data=np.array(value))
 
-    def delHDF5(self):
+    def delHDF5(self) -> None:
         """Deletes hdf5 file if it exists
         """
         if os.path.exists(self.file_name):

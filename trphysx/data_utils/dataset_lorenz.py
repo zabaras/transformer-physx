@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 class LorenzDataset(PhysicalDataset):
     """Dataset for the Lorenz numerical example
     """
-    def embed_data(self, h5_file: h5py.File, embedder: EmbeddingModel, save_states:bool = False, noise_std=0):
+    def embed_data(self, h5_file: h5py.File, embedder: EmbeddingModel, noise_std=0):
         """Embeds lorenz data into a 1D vector representation for the transformer.
 
         TODO: Remove redundant arguments
@@ -42,7 +42,7 @@ class LorenzDataset(PhysicalDataset):
                 self.examples.append(data_series0)
                 # self.position_ids.append(torch.arange(0, self.block_size, dtype=torch.long) + i)
                 # self.position_ids.append(None)
-                if save_states:
+                if self.eval:
                     self.states.append(data_series[i: i + self.block_size].cpu())
             samples = samples + 1
             if (self.ndata > 0 and samples >= self.ndata):  # If we have enough time-series samples break loop
@@ -86,4 +86,4 @@ class LorenzPredictDataset(LorenzDataset):
         return out.view([-1] + self.embedder.input_dims)
 
     def __getitem__(self, i) -> torch.Tensor:
-        return {'inputs_embeds': self.examples[i][:1], 'targets': self.states[i]}
+        return {'inputs_embeds': self.examples[i][:1], 'labels_embeds': self.examples[i], 'states': self.states[i]}

@@ -111,7 +111,7 @@ class LorenzEmbedding(EmbeddingModel):
             g (Tensor): [B, config.n_embd] Koopman observables
 
         Returns:
-            (Tensor): [B, #] Physical feature tensor
+            (Tensor): [B, 3] Physical feature tensor
         """
         out = self.recoveryNet(g)
         x = self._unnormalize(out)
