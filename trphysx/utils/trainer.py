@@ -356,7 +356,9 @@ class Trainer:
         Returns:
             float: Predicted state MSE error
         """
-        logger.warning('Eval states has not been overloaded.')
+        if self.embedding_model is None:
+            logger.warning('No embedding model provided, cannot recover state predictions.')
+            return 0
 
         bsize = pred_embeds.size(0)
         tsize = pred_embeds.size(1)
@@ -366,8 +368,11 @@ class Trainer:
         out = self.embedder.recover(x_in)
         out = out.view([bsize, tsize] + self.embedding_model.input_dims)
 
+        mse = nn.MSELoss()
+        state_error = mse(out, states)
+
         if self.viz:
             self.viz.plotPrediction(out[0], states[0], self.args.plot_dir, epoch=epoch, pid=0)
             self.viz.plotPrediction(out[-1], states[-1], self.args.plot_dir, epoch=epoch, pid=1)
 
-        return 0
+        return state_error
