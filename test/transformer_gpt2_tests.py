@@ -10,7 +10,6 @@ from trphysx.transformer import PhysformerGPT2
 @dataclass
 class PhooConfig:
     n_ctx:int = 16
-    n_positions:int = 16
     n_embd:int = 16
     n_layer:int = 2
     n_head:int = 2

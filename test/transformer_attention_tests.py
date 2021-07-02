@@ -17,7 +17,7 @@ class PhooConfig:
 @dataclass
 class PhooBlockConfig:
     n_patches:int = np.random.randint(1, 5)
-    n_ctx:int = n_patches * np.random.randint(1, 10)
+    n_ctx:int = n_patches * np.random.randint(5, 10)
     n_head:int = 1
     attn_pdrop:float = 0.0
     resid_pdrop:float = 0.0

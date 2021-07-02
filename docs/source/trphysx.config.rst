@@ -57,11 +57,3 @@ trphysx.config.configuration\_phys module
    :undoc-members:
    :show-inheritance:
 
-
-Module contents
----------------
-
-.. automodule:: trphysx.config
-   :members:
-   :undoc-members:
-   :show-inheritance:

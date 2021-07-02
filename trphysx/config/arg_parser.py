@@ -1,13 +1,13 @@
-'''
+"""
 =====
+Distributed by: Notre Dame SCAI Lab (MIT Liscense)
 - Associated publication:
-url: 
+url: https://arxiv.org/abs/2010.03957
 doi: 
-github: 
+github: https://github.com/zabaras/transformer-physx
 =====
-'''
+"""
 import dataclasses
-import json
 import sys
 from argparse import ArgumentParser
 from enum import Enum
@@ -17,7 +17,6 @@ from typing import Any, Iterable, List, NewType, Optional, Tuple, Union
 
 DataClass = NewType("DataClass", Any)
 DataClassType = NewType("DataClassType", Any)
-
 
 class HfArgumentParser(ArgumentParser):
     """

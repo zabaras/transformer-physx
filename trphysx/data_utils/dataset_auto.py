@@ -39,9 +39,7 @@ class AutoDataset():
 
         Args:
             dataset_name (str): Keyword/name of the data-set needed
-            *args: Arguments to be passed to dataset class constructor
-            **kwargs: Keyword arguments to be passed to dataset class constructor
-
+            
         Raises:
             ValueError: If dataset_name is not a supported model type
 

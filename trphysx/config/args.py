@@ -1,8 +1,17 @@
+"""
+=====
+Distributed by: Notre Dame SCAI Lab (MIT Liscense)
+- Associated publication:
+url: https://arxiv.org/abs/2010.03957
+doi: 
+github: https://github.com/zabaras/transformer-physx
+=====
+"""
 import os
 import logging
 import torch
 from dataclasses import dataclass, field
-from typing import Optional #Needs python 3.8 for literal
+from typing import Optional, Tuple #Needs python 3.8 for literal
 
 HOME = os.getcwd()
 INITS = ['lorenz', 'cylinder', 'grayscott']
@@ -137,19 +146,38 @@ class TrainingArguments:
 
 
 class ArgUtils:
-    '''
-    Argument utility class for modifying particular arguments after initialization
-    '''
+    """Argument utility class for modifying particular arguments after initialization
+    """
     @classmethod
-    def config(cls, modelArgs:ModelArguments, dataArgs:DataArguments, trainingArgs:TrainingArguments, create_paths=True):
+    def config(
+        cls, 
+        modelArgs: ModelArguments, 
+        dataArgs: DataArguments, 
+        trainingArgs: TrainingArguments, 
+        create_paths: bool = True
+    ) -> Tuple[ModelArguments, DataArguments, TrainingArguments]:
+        """Runs additional runtime configuration updates for argument instances
+
+        Args:
+            modelArgs (ModelArguments): Transformer model arguments
+            dataArgs (DataArguments): Data loader/ data set arguments
+            trainingArgs (TrainingArguments): Training arguments
+            create_paths (bool, optional): Create training/testing folders. Defaults to True.
+
+        Returns:
+            Tuple[ModelArguments, DataArguments, TrainingArguments]: Updated argument instances
+        """
         modelArgs = cls.configModelNames(modelArgs)
+
         if create_paths:
             modelArgs, dataArgs, trainingArgs = cls.configPaths(modelArgs, dataArgs, trainingArgs)
+
         trainingArgs = cls.configTorchDevices(trainingArgs)
+
         return modelArgs, dataArgs, trainingArgs
 
     @classmethod
-    def configModelNames(cls, modelArgs:ModelArguments):
+    def configModelNames(cls, modelArgs: ModelArguments) -> ModelArguments:
         # Set up model, config, viz and embedding names
         if not modelArgs.init_name in INITS:
             logger.warn('Selected init name not in built-in models. Be careful.')
@@ -162,8 +190,22 @@ class ArgUtils:
         return modelArgs
 
     @classmethod
-    def configPaths(cls, modelArgs:ModelArguments, dataArgs:DataArguments, trainingArgs:TrainingArguments):
-        # Set up training paths
+    def configPaths(
+        cls, 
+        modelArgs: ModelArguments, 
+        dataArgs: DataArguments, 
+        trainingArgs: TrainingArguments
+    ) -> Tuple[ModelArguments, DataArguments, TrainingArguments]:
+        """Sets up various folder path parameters
+
+        Args:
+            modelArgs (ModelArguments): Transformer model arguments
+            dataArgs (DataArguments): Data loader/ data set arguments
+            trainingArgs (TrainingArguments): Training arguments
+
+        Returns:
+            Tuple[ModelArguments, DataArguments, TrainingArguments]: Updated argument instances
+        """
         if(trainingArgs.exp_dir is None):
             trainingArgs.exp_dir = os.path.join(HOME, 'outputs', '{:s}'.format(modelArgs.config_name), \
                     'ntrain{:d}_epochs{:d}_batch{:d}'.format(dataArgs.n_train, trainingArgs.epochs, trainingArgs.train_batch_size))
@@ -184,8 +226,16 @@ class ArgUtils:
         return modelArgs, dataArgs, trainingArgs
 
     @classmethod
-    def configTorchDevices(cls, args:TrainingArguments):
-        # Set up PyTorch device(s)
+    def configTorchDevices(cls, args: TrainingArguments) -> TrainingArguments:
+        """Sets up device ids for training
+
+        Args:
+            args (TrainingArguments): Training arguments
+
+        Returns:
+            TrainingArguments: Updated argument instance
+        """
+        # Set up parallel PyTorch device(s)
         if(torch.cuda.device_count() > 1 and args.n_gpu > 1):
             if(torch.cuda.device_count() < args.n_gpu):
                 args.n_gpu = torch.cuda.device_count()
@@ -194,12 +244,15 @@ class ArgUtils:
             logging.info("Looks like we have {:d} GPUs to use. Going parallel.".format(args.n_gpu))
             args.device_ids = [i for i in range(0,args.n_gpu)]
             args.src_device = "cuda:{}".format(args.device_ids[0])
+        # Set up parallel PyTorch single GPU device
         elif(torch.cuda.is_available()):
             logging.info("Using a single GPU for training.")
             args.device_ids = [0]
             args.src_device = "cuda:{}".format(args.device_ids[0])
             args.n_gpu = 1
+        # CPU only
         else:
             logging.info("No GPUs found, will be training on CPU.")
             args.src_device = "cpu"
+
         return args
