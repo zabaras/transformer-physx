@@ -7,10 +7,7 @@ doi:
 github: https://github.com/zabaras/transformer-physx
 =====
 """
-import os
-import json
 import logging
-# from trphysx.embedding.embedding_model import EmbeddingModel, EmbeddingTrainer
 from typing import Optional
 from collections import OrderedDict
 from .embedding_model import EmbeddingModel, EmbeddingTrainingHead

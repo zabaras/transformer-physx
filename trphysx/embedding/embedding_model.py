@@ -141,8 +141,7 @@ class EmbeddingTrainingHead(nn.Module):
 
 
     def load_model(self, *args, **kwargs):
-        """
-        Load the embedding model
+        """Load the embedding model
         """
         assert not self.embedding_model is None, "Must initialize embedding model before loading."
 

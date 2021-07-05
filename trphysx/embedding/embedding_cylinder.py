@@ -176,7 +176,7 @@ class CylinderEmbedding(EmbeddingModel):
             visc (Tensor): [B] Viscosities of the fluid in the mini-batch
 
         Returns:
-            (Tensor): [B, config.n_embd] Koopman observables at the next time-step
+            Tensor: [B, config.n_embd] Koopman observables at the next time-step
         """
         # Koopman operator
         kMatrix = Variable(torch.zeros(g.size(0), self.obsdim, self.obsdim)).to(self.devices[0])
@@ -202,7 +202,7 @@ class CylinderEmbedding(EmbeddingModel):
             requires_grad (bool, optional): If to return with gradient storage. Defaults to True
 
         Returns:
-            (Tensor): Full Koopman operator tensor
+            Tensor: Full Koopman operator tensor
         """
         if not requires_grad:
             return self.kMatrix.detach()

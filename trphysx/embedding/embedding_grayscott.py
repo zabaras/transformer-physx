@@ -123,7 +123,7 @@ class GrayScottEmbedding(EmbeddingModel):
             x (Tensor): [B, 2, H, W, D] Input feature tensor
 
         Returns:
-            (TensorTuple): Tuple containing:
+            TensorTuple: Tuple containing:
 
                 | (Tensor): [B, config.n_embd] Koopman observables
                 | (Tensor): [B, 2, H, W, D] Recovered feature tensor
@@ -145,7 +145,7 @@ class GrayScottEmbedding(EmbeddingModel):
             x (Tensor): [B, 2, H, W, D] Input feature tensor
 
         Returns:
-            (Tensor): [B, config.n_embd] Koopman observables
+            Tensor: [B, config.n_embd] Koopman observables
         """
         x = self._normalize(x)
         g0 = self.observableNet(x)
@@ -198,7 +198,7 @@ class GrayScottEmbedding(EmbeddingModel):
             requires_grad (bool, optional): If to return with gradient storage. Defaults to True
 
         Returns:
-            (Tensor): Full Koopman operator tensor
+            Tensor: Full Koopman operator tensor
         """
         if not requires_grad:
             return self.kMatrix.detach()

@@ -78,7 +78,7 @@ class LorenzEmbedding(EmbeddingModel):
             x (Tensor): [B, 3] Input feature tensor
 
         Returns:
-            (TensorTuple): Tuple containing:
+            TensorTuple: Tuple containing:
 
                 | (Tensor): [B, config.n_embd] Koopman observables
                 | (Tensor): [B, 3] Recovered feature tensor
@@ -98,7 +98,7 @@ class LorenzEmbedding(EmbeddingModel):
             x (Tensor): [B, 3] Input feature tensor
 
         Returns:
-            (Tensor): [B, config.n_embd] Koopman observables
+            Tensor: [B, config.n_embd] Koopman observables
         """
         x = self._normalize(x)
         g = self.observableNet(x)
@@ -111,7 +111,7 @@ class LorenzEmbedding(EmbeddingModel):
             g (Tensor): [B, config.n_embd] Koopman observables
 
         Returns:
-            (Tensor): [B, 3] Physical feature tensor
+            Tensor: [B, 3] Physical feature tensor
         """
         out = self.recoveryNet(g)
         x = self._unnormalize(out)
