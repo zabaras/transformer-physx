@@ -9,14 +9,6 @@ trphysx.transformer.attention module
    :undoc-members:
    :show-inheritance:
 
-trphysx.transformer.function\_wrappers module
----------------------------------------------
-
-.. automodule:: trphysx.transformer.function_wrappers
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 trphysx.transformer.generate\_utils module
 ------------------------------------------
 
@@ -57,11 +49,3 @@ trphysx.transformer.utils module
    :undoc-members:
    :show-inheritance:
 
-
-Module contents
----------------
-
-.. automodule:: trphysx.transformer
-   :members:
-   :undoc-members:
-   :show-inheritance:

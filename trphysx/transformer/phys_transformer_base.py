@@ -1,18 +1,25 @@
+"""
+=====
+Distributed by: Notre Dame SCAI Lab (MIT Liscense)
+- Associated publication:
+url: https://arxiv.org/abs/2010.03957
+doi: 
+github: https://github.com/zabaras/transformer-physx
+=====
+"""
 import logging
-import math
 import os, sys
-from typing import Optional
 from abc import abstractmethod
 
 import torch
 from torch import nn
-from torch.nn import MSELoss
 from .utils import  Conv1D
 
 logger = logging.getLogger(__name__)
 
 class PhysformerBase(nn.Module):
-
+    """Parent class for physical transformers
+    """
     model_name: str = "transformer_model"
 
     def __init__(self, config, *inputs, **kwargs):
@@ -29,9 +36,11 @@ class PhysformerBase(nn.Module):
         pass
 
     def get_input_embeddings(self):
+        # TODO: Is this really needed?
         return self.wte
 
     def set_input_embeddings(self, new_embeddings):
+        # TODO: Is this really needed?
         self.wte = new_embeddings
 
     def _init_weights(self, module):
@@ -47,7 +56,12 @@ class PhysformerBase(nn.Module):
             module.bias.data.zero_()
             module.weight.data.fill_(1.0)
 
-    def _num_parameters(self):
+    def _num_parameters(self) -> int:
+        """Gets number of learnable parameters
+
+        Returns:
+            int: Number of parameters
+        """
         count = 0
         for name, param in self.named_parameters():
             # print(name, param.numel())
@@ -82,9 +96,15 @@ class PhysformerBase(nn.Module):
         if hasattr(output_embeddings, "out_features") and hasattr(input_embeddings, "num_embeddings"):
             output_embeddings.out_features = input_embeddings.num_embeddings
 
-    def save_model(self, save_directory, epoch=0):
-        """
-        Saves embedding model to the specified directory.
+    def save_model(self, save_directory: str, epoch: int = 0) -> None:
+        """Saves transformer model to the specified directory.
+
+        Args:
+            save_directory (str): Folder to save file at
+            epoch (int, optional): Epoch number to name model file. Defaults to 0.
+
+        Raises:
+            AssertionError: If provided directory is not valid.
         """
         if os.path.isfile(save_directory):
             raise AssertionError("Provided path ({}) should be a directory, not a file".format(save_directory))
@@ -96,16 +116,22 @@ class PhysformerBase(nn.Module):
         torch.save(self.state_dict(), output_model_file)
 
 
-    def load_model(self, file_or_path_directory, epoch=0):
-        """
-        Load a embedding model from the specified file or path
+    def load_model(self, file_or_path_directory: str, epoch: int = 0) -> None:
+        """Load a transformer model from the specified file or path
+        
+        Args:
+            file_or_path_directory (str): File or folder path to load state dictionary from.
+            epoch (int, optional): Epoch of current model for file name, used if folder path is provided. Defaults to 0.
+        
+        Raises:
+            FileNotFoundError: If provided file or directory could not be found.
         """
         if os.path.isfile(file_or_path_directory):
-            logger.info('Loading transformer model from file: {}'.format(file_or_path_directory))
+            logger.info('Loading embedding model from file: {}'.format(file_or_path_directory))
             self.load_state_dict(torch.load(file_or_path_directory, map_location=lambda storage, loc: storage))
-        elif os.path.isdir(file_or_path_directory):
+        elif  os.path.isdir(file_or_path_directory):
             file_path = os.path.join(file_or_path_directory, "{}{:d}.pth".format(self.model_name, epoch))
-            logger.info('Loading transformer model from file: {}'.format(file_path))
+            logger.info('Loading embedding model from file: {}'.format(file_path))
             self.load_state_dict(torch.load(file_path, map_location=lambda storage, loc: storage))
         else:
-            logger.warn("Provided path or file ({}) does not exist".format(file_or_path_directory))
+            raise FileNotFoundError("Provided path or file ({}) does not exist".format(file_or_path_directory))

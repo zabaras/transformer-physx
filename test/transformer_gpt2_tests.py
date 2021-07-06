@@ -48,7 +48,7 @@ if __name__ == "__main__":
 
     # Test generation
     n_steps = np.random.randint(config.n_ctx, 2*config.n_ctx)
-    x = {"inputs_embeds": torch.randn(batch_size, 1, config.n_embd)}
-    output = model.generate(x, max_length=n_steps, use_cache=False)
+    inputs_embeds = torch.randn(batch_size, 1, config.n_embd)
+    output = model.generate(inputs_embeds=inputs_embeds, max_length=n_steps, use_cache=False)
 
     assert output.size() == torch.Size((batch_size, n_steps, config.n_embd))

@@ -16,10 +16,6 @@ from ..config.configuration_phys import PhysConfig
 Tensor = torch.Tensor
 
 class MaskedAttention(nn.Module):
-    '''
-    Attention implementation used in:
-    
-    '''
     """Masked self-attention module based on the Hugging face implementation
     https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_gpt2.py
 
@@ -116,7 +112,7 @@ class MaskedAttention(nn.Module):
         # Mask heads if we want to
         if head_mask is not None:
             w = w * head_mask
-
+        
         outputs = [torch.matmul(w, v)]
         if output_attentions:
             outputs.append(w)
