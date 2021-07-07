@@ -41,7 +41,7 @@ class AutoViz():
             viz_name (str): Keyword/name of visualization class
 
         Raises:
-            ValueError: If viz_name is not a supported visualization type
+            KeyError: If viz_name is not a supported visualization type
 
         Returns:
             (Viz): Initialized viz class
@@ -51,4 +51,4 @@ class AutoViz():
             return VIZ_MAPPING[viz_name]
         else:
             err_str = "Provided viz name, {:s}, not found in existing visualization classes.".format(viz_name)
-            raise ValueError(err_str)
+            raise KeyError(err_str)

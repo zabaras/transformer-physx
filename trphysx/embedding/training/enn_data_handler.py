@@ -551,7 +551,7 @@ class AutoDataHandler():
             model_name (str): Model name
 
         Raises:
-            ValueError: If model_name is not a supported model type
+            KeyError: If model_name is not a supported model type
 
         Returns:
             (EmbeddingDataHandler): Embedding data handler
@@ -562,7 +562,7 @@ class AutoDataHandler():
             # Init config class
             loader = loader_class(**kwargs)
         else:
-            err_str = "Provided model name: {}, not present in built=int data handlers".format(model_name)
-            raise ValueError(err_str)
+            err_str = "Provided model name: {}, not present in built in data handlers".format(model_name)
+            raise KeyError(err_str)
 
         return loader

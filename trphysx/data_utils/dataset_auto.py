@@ -41,7 +41,7 @@ class AutoDataset():
             dataset_name (str): Keyword/name of the data-set needed
             
         Raises:
-            ValueError: If dataset_name is not a supported model type
+            KeyError: If dataset_name is not a supported model type
 
         Returns:
             (PhysicalDataset): Initialized data-set
@@ -52,5 +52,5 @@ class AutoDataset():
             # Init config class
             dataset = dataset_class(*args, **kwargs)
         else:
-            raise ValueError("Provided model name: {}, not present in supported data-sets".format(dataset_name))
+            raise KeyError("Provided model name: {}, not present in supported data-sets".format(dataset_name))
         return dataset

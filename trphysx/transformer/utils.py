@@ -1,3 +1,4 @@
+from typing import Callable
 import torch
 import torch.nn.functional as F
 from torch import nn
@@ -8,18 +9,22 @@ from packaging import version
 
 logger = logging.getLogger(__name__)
 
+Tensor = torch.Tensor
+
 class Conv1D(nn.Module):
     """
-    1D-convolutional layer as defined by Radford et al. for OpenAI GPT (and also used in GPT-2).
-    Basically works like a linear layer but the weights are transposed.
+    1D-convolutional layer (eqv to FCN) as defined by Radford et al. for OpenAI GPT 
+    (and also used in GPT-2). Basically works like a linear layer but the weights are transposed.
+
+    Note: Code adopted from: https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py
+
     Args:
-        nf (:obj:`int`): The number of output features.
-        nx (:obj:`int`): The number of input features.
-
-    Code adopted from: https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py
+        nf (int): The number of output features.
+        nx (int): The number of input features.
     """
-
-    def __init__(self, nf, nx):
+    def __init__(self, nf: int, nx: int) -> None:
+        """Constructor
+        """
         super().__init__()
         self.nf = nf
         w = torch.empty(nx, nf)
@@ -27,70 +32,50 @@ class Conv1D(nn.Module):
         self.weight = nn.Parameter(w)
         self.bias = nn.Parameter(torch.zeros(nf))
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
+        """Forward pass
+
+        Args:
+            x (Tensor): [*, nx] input features
+
+        Returns:
+            Tensor: [*, nf] output features
+        """
         size_out = x.size()[:-1] + (self.nf,)
         x = torch.addmm(self.bias, x.view(-1, x.size(-1)), self.weight)
         x = x.view(*size_out)
         return x
 
-def _gelu_python(x):
-    """
-    Original Implementation of the GELU activation function in Google BERT repo when initially created. For
-    information: OpenAI GPT's GELU is slightly different (and gives slightly different results): 0.5 * x * (1 +
-    torch.tanh(math.sqrt(2 / math.pi) * (x + 0.044715 * torch.pow(x, 3)))) This is now written in C in
-    torch.nn.functional Also see the Gaussian Error Linear Units paper: https://arxiv.org/abs/1606.08415
-    """
-    return x * 0.5 * (1.0 + torch.erf(x / math.sqrt(2.0)))
 
-
-def gelu_new(x):
-    """
-    Implementation of the GELU activation function currently in Google BERT repo (identical to OpenAI GPT). Also see
-    the Gaussian Error Linear Units paper: https://arxiv.org/abs/1606.08415
+def gelu_new(x: Tensor) -> Tensor:
+    """Implementation of the GELU activation function currently in Google BERT repo (identical to OpenAI GPT).
     """
     return 0.5 * x * (1.0 + torch.tanh(math.sqrt(2.0 / math.pi) * (x + 0.044715 * torch.pow(x, 3.0))))
 
 
-if version.parse(torch.__version__) < version.parse("1.4"):
-    gelu = _gelu_python
-else:
-    gelu = F.gelu
-
-
 def gelu_fast(x):
+    """ Faster approximate form of GELU activation function
+    """
     return 0.5 * x * (1.0 + torch.tanh(x * 0.7978845608 * (1.0 + 0.044715 * x * x)))
 
 
-def _silu_python(x):
+def mish(x: Tensor) -> Tensor:
+    """Mish activation function
     """
-    See Gaussian Error Linear Units (Hendrycks et al., https://arxiv.org/abs/1606.08415) where the SiLU (Sigmoid Linear
-    Unit) was originally introduced and coined, and see Sigmoid-Weighted Linear Units for Neural Network Function
-    Approximation in Reinforcement Learning (Elfwing et al., https://arxiv.org/abs/1702.03118) and Swish: a Self-Gated
-    Activation Function (Ramachandran et al., https://arxiv.org/abs/1710.05941v1) where the SiLU was experimented with
-    later.
-    """
-    return x * torch.sigmoid(x)
-
-
-if version.parse(torch.__version__) < version.parse("1.7"):
-    silu = _silu_python
-else:
-    silu = F.silu
-
-
-def mish(x):
     return x * torch.tanh(torch.nn.functional.softplus(x))
 
 
-def linear_act(x):
+def linear_act(x: Tensor) -> Tensor:
+    """Linear activate function
+    """
     return x
 
 
 ACT2FN = {
     "relu": F.relu,
-    "silu": silu,
-    "swish": silu,
-    "gelu": gelu,
+    "silu": F.silu,
+    "swish": F.silu,
+    "gelu": F.gelu,
     "tanh": torch.tanh,
     "gelu_new": gelu_new,
     "gelu_fast": gelu_fast,
@@ -99,8 +84,18 @@ ACT2FN = {
     "sigmoid": torch.sigmoid,
 }
 
+def get_activation(activation_string: str) -> Callable:
+    """Gets a activation function
 
-def get_activation(activation_string):
+    Args:
+        activation_string (str): Name of activate function
+
+    Raises:
+        KeyError: Not a valid activation function
+
+    Returns:
+        Callable: activate function
+    """
     if activation_string in ACT2FN:
         return ACT2FN[activation_string]
     else:
