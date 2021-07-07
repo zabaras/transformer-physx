@@ -1,22 +1,29 @@
-from typing import Callable
-import torch
-import torch.nn.functional as F
-from torch import nn
-
+"""
+=====
+Distributed by: Notre Dame SCAI Lab (MIT Liscense)
+- Associated publication:
+url: https://arxiv.org/abs/2010.03957
+doi: 
+github: https://github.com/zabaras/transformer-physx
+=====
+"""
 import math
 import logging
-from packaging import version
+import torch
+import torch.nn.functional as F
+from typing import Callable
+from torch import nn
 
 logger = logging.getLogger(__name__)
 
 Tensor = torch.Tensor
 
 class Conv1D(nn.Module):
-    """
-    1D-convolutional layer (eqv to FCN) as defined by Radford et al. for OpenAI GPT 
+    """1D-convolutional layer (eqv to FCN) as defined by Radford et al. for OpenAI GPT 
     (and also used in GPT-2). Basically works like a linear layer but the weights are transposed.
 
-    Note: Code adopted from: https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py
+    Note: 
+        Code adopted from: https://github.com/huggingface/transformers/blob/master/src/transformers/modeling_utils.py
 
     Args:
         nf (int): The number of output features.
@@ -36,10 +43,10 @@ class Conv1D(nn.Module):
         """Forward pass
 
         Args:
-            x (Tensor): [*, nx] input features
+            x (Tensor): [..., nx] input features
 
         Returns:
-            Tensor: [*, nf] output features
+            Tensor: [..., nf] output features
         """
         size_out = x.size()[:-1] + (self.nf,)
         x = torch.addmm(self.bias, x.view(-1, x.size(-1)), self.weight)
@@ -69,7 +76,6 @@ def linear_act(x: Tensor) -> Tensor:
     """Linear activate function
     """
     return x
-
 
 ACT2FN = {
     "relu": F.relu,

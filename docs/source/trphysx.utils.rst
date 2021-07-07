@@ -1,27 +1,18 @@
-trphysx.utils package
-=====================
+trphysx.utils
+=============
 
-trphysx.utils.metrics module
-----------------------------
+trphysx.utils.metrics
+---------------------
 
 .. automodule:: trphysx.utils.metrics
    :members:
    :undoc-members:
    :show-inheritance:
 
-trphysx.utils.trainer module
-----------------------------
+trphysx.utils.trainer
+---------------------
 
 .. automodule:: trphysx.utils.trainer
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: trphysx.utils
    :members:
    :undoc-members:
    :show-inheritance:
