@@ -8,7 +8,7 @@ github: https://github.com/zabaras/transformer-physx
 =====
 """
 import logging
-from typing import Optional, List
+from typing import List
 import torch
 from torch import nn
 
@@ -173,8 +173,6 @@ class PhysformerGPT2(GenerationMixin, PhysformerBase): # Mixins come first befor
             List[Tensor]:  Output features, attention state (if requested), 
             hidden states of all layers (if requested), attention tensor (if requested)
         """
-
-        output_attentions = output_attentions if output_attentions is not None else self.config.output_attentions
 
         # Input embeddings
         input_shape = inputs_embeds.size()[:-1]
