@@ -33,7 +33,7 @@ if __name__ == "__main__":
     batch_size = np.random.randint(1, 10)
     n_steps = np.random.randint(1, config.n_ctx)
     x = torch.randn(batch_size, n_steps, config.n_embd) # Batch, time-steps, embed
-    output = model(x, use_cache=False)
+    output = model(x, use_cache=False, output_attentions=True)
 
     # Test output tensor size is correct
     assert output[0].size() == torch.Size((batch_size, n_steps, config.n_ctx))

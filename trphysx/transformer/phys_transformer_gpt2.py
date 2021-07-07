@@ -1,27 +1,39 @@
+"""
+=====
+Distributed by: Notre Dame SCAI Lab (MIT Liscense)
+- Associated publication:
+url: https://arxiv.org/abs/2010.03957
+doi: 
+github: https://github.com/zabaras/transformer-physx
+=====
+"""
 import logging
-import math
-import os, sys
-sys.path.append("../")
-from typing import Optional
-from abc import abstractmethod
+from typing import Optional, List
 import torch
 from torch import nn
-from torch.nn import MSELoss
 
 from .attention import MaskedAttention
 from .utils import Conv1D, ACT2FN
 from .phys_transformer_base import PhysformerBase
-from .generate_utils import GenerationMixin
+from .generate_utils import GenerationMixin, LongTensor
+from ..config.configuration_phys import PhysConfig
 
 logger = logging.getLogger(__name__)
 
+Tensor = torch.Tensor
+LongTensor = torch.LongTensor
 
 class MLP(nn.Module):
-    '''
-    Word specific FCNN implementation from:
-    https://github.com/huggingface/transformers/blob/master/src/transformers/models/gpt2/modeling_gpt2.py
-    '''
-    def __init__(self, n_state, config):  # in MLP: n_state=3072 (4 * n_embd)
+    """Simple fully connected neural network layer.
+    Includes activations function and dropout.
+
+    Args:
+        n_state (int): dimensionality of input features
+        config (PhysConfig): Phys-transformer config object
+    """
+    def __init__(self, n_state: int, config: PhysConfig) -> None:
+        """Constructor 
+        """
         super().__init__()
         nx = config.n_embd
         self.c_fc = Conv1D(n_state, nx)
@@ -29,14 +41,32 @@ class MLP(nn.Module):
         self.act = ACT2FN[config.activation_function]
         self.dropout = nn.Dropout(config.resid_pdrop)
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
+        """Forward pass
+
+        Args:
+            x (Tensor): [B, T, n_state] input features
+
+        Returns:
+            Tensor: Output features
+        """
         h = self.act(self.c_fc(x))
         h2 = self.c_proj(h)
         return self.dropout(h2)
 
 
 class Block(nn.Module):
-    def __init__(self, n_ctx, config, scale=False):
+    """Transformer decoder block consisting of layer norm, masked self-attention,
+    layer norm and fully connected layer.
+
+    Args:
+        n_ctx (int): contex length of block
+        config (PhysConfig): Phys-transformer config object
+        scale (bool, optional): Scaled self-attention calculation. Defaults to False.
+    """
+    def __init__(self, n_ctx: int, config: PhysConfig, scale: bool = False) -> None:
+        """Constructor
+        """
         super().__init__()
         nx = config.n_embd
         self.ln_1 = nn.LayerNorm(nx, eps=config.layer_norm_epsilon)
@@ -45,8 +75,27 @@ class Block(nn.Module):
         self.mlp = MLP(4 * nx, config)
 
     def forward(
-        self, x, layer_past=None, attention_mask=None, head_mask=None, use_cache=False, output_attentions=False,
-    ):
+        self, 
+        x: Tensor, 
+        layer_past: List[Tensor] = None, 
+        attention_mask: LongTensor = None, 
+        head_mask: LongTensor = None, 
+        use_cache: bool = False, 
+        output_attentions: bool = False,
+    ) -> List[Tensor]:
+        """Forward pass
+
+        Args:
+            x (Tensor): [B, T, n_state] input features
+            layer_past ([type], optional): Past self-attention calculation. Defaults to None.
+            attention_mask (LongTensor, optional): Attention mask. Defaults to None.
+            head_mask (LongTensor, optional): Attention value. Defaults to None.
+            use_cache (bool, optional): Store attention state (key values). Defaults to False.
+            output_attentions (bool, optional): Return attention values. Defaults to False.
+
+        Returns:
+            List[Tensor]: List of output tensors
+        """
         # Evaluate attention heads
         output_attn = self.attn.forward(
             self.ln_1(x),
@@ -56,7 +105,8 @@ class Block(nn.Module):
             use_cache=use_cache,
             output_attentions=output_attentions,
         )
-        a = output_attn[0]  # output_attn: a, present, (attentions)
+
+        a = output_attn[0] 
         # Residual connection 1
         x = x + a
         # FCNN
@@ -68,8 +118,15 @@ class Block(nn.Module):
         return outputs  # x, present, (attentions)
 
 class PhysformerGPT2(GenerationMixin, PhysformerBase): # Mixins come first before base to overload
+    """Transformer decoder model for modeling physics
 
-    def __init__(self, config, model_name:Optional[str] = None):
+    Args:
+            config (PhysConfig): Phys-transformer config object
+            model_name (str, optional): Model name. Defaults to None.
+    """
+    def __init__(self, config: PhysConfig, model_name: str = None) -> None:
+        """Constructor        
+        """
         PhysformerBase.__init__(self, config)
         self.output_hidden_states = config.output_hidden_states
 
@@ -89,15 +146,34 @@ class PhysformerGPT2(GenerationMixin, PhysformerBase): # Mixins come first befor
 
     def forward(
         self,
-        inputs_embeds=None,
-        past=None,
-        attention_mask=None,
-        position_ids=None,
-        prop_embeds=None,
-        head_mask=None,
-        use_cache=True,
-        output_attentions=None,
-    ):
+        inputs_embeds: Tensor,
+        position_ids: Tensor = None,
+        prop_embeds: Tensor =None,
+        past: List[List[Tensor]] = None,
+        attention_mask: LongTensor = None,
+        head_mask: LongTensor = None,
+        use_cache: bool = True,
+        output_attentions: bool = False
+    ) -> List[Tensor]:
+        """Forward pass
+
+        Note: Attention masks are not properly implemented presently and will likely not work.
+
+        Args:
+            inputs_embeds (Tensor): [B, T, n_embed] Input features
+            position_ids (Tensor, optional): [T, n_embed] Manually specify position ids. Defaults to None.
+            prop_embeds (Tensor, optional): [B, T, n_embed] Optional property feature. Defaults to None.
+            past (List[List[Tensor]], optional): Transformer past state. Defaults to None.
+            attention_mask (LongTensor, optional): [B, T] Sequence attention mask. Defaults to None.
+            head_mask (LongTensor, optional): Attention value mask. Defaults to None.
+            use_cache (bool, optional): Return attention states (keys). Defaults to True.
+            output_attentions (bool, optional): Return attention scores. Defaults to False.
+
+        Returns:
+            List[Tensor]:  Output features, attention state (if requested), 
+            hidden states of all layers (if requested), attention tensor (if requested)
+        """
+
         output_attentions = output_attentions if output_attentions is not None else self.config.output_attentions
 
         # Input embeddings
@@ -118,6 +194,7 @@ class PhysformerGPT2(GenerationMixin, PhysformerBase): # Mixins come first befor
             past = [None] * len(self.h)
         else:
             past_length = past[0][0].size(-2)
+            
         if position_ids is None:
             device = inputs_embeds.device
             position_ids = torch.arange(past_length, input_shape[-1] + past_length, dtype=torch.float, device=device)
@@ -129,16 +206,9 @@ class PhysformerGPT2(GenerationMixin, PhysformerBase): # Mixins come first befor
             attention_mask = attention_mask.view(batch_size, -1)
             # We create a 3D attention mask from a 2D tensor mask.
             # Sizes are [batch_size, 1, 1, to_seq_length]
-            # So we can broadcast to [batch_size, num_heads, from_seq_length, to_seq_length]
-            # this attention mask is more simple than the triangular masking of causal attention
-            # used in OpenAI GPT, we just need to prepare the broadcast dimension here.
             attention_mask = attention_mask.unsqueeze(1).unsqueeze(2)
 
-            # Since attention_mask is 1.0 for positions we want to attend and 0.0 for
-            # masked positions, this operation will create a tensor which is 0.0 for
-            # positions we want to attend and -10000.0 for masked positions.
-            # Since we are adding it to the raw scores before the softmax, this is
-            # effectively the same as removing these entirely.
+            # Set mask to 0 for positions we want to attend and -10000 for ones we do not
             attention_mask = attention_mask.to(dtype=next(self.parameters()).dtype)  # fp16 compatibility
             attention_mask = (1.0 - attention_mask) * -10000.0
 
@@ -150,16 +220,17 @@ class PhysformerGPT2(GenerationMixin, PhysformerBase): # Mixins come first befor
         i = i[:, :, self.config.n_embd % 2]
         position_embeds[:, :, 1::2] = torch.cos(position_ids.unsqueeze(-1) / 10000 ** (2 * i / self.config.n_embd))
         
+        # Combine input embedding, position embeding and prop embeddings
         hidden_states = inputs_embeds + position_embeds + prop_embeds
-        # hidden_states = inputs_embeds + position_embeds
         hidden_states = self.drop(hidden_states)
-
         output_shape = input_shape + (hidden_states.size(-1),)
 
+        # Loop through transformer self-attention layers
         presents = ()
         all_attentions = []
         all_hidden_states = ()
         for i, (block, layer_past) in enumerate(zip(self.h, past)):
+
             if self.output_hidden_states:
                 all_hidden_states = all_hidden_states + (hidden_states.view(*output_shape),)
 
@@ -167,7 +238,7 @@ class PhysformerGPT2(GenerationMixin, PhysformerBase): # Mixins come first befor
                 hidden_states,
                 layer_past=layer_past,
                 attention_mask=attention_mask,
-                # head_mask=head_mask[i],
+                head_mask=head_mask,
                 use_cache=use_cache,
                 output_attentions=output_attentions,
             )
@@ -180,7 +251,6 @@ class PhysformerGPT2(GenerationMixin, PhysformerBase): # Mixins come first befor
                 all_attentions.append(outputs[2])
 
         hidden_states = self.mlp_f(self.ln_f(hidden_states))
-        # hidden_states = self.mlp_f(self.ln_f(hidden_states).view(-1, self.n_embd // 64, 64))
 
         hidden_states = hidden_states.view(*output_shape)
         # Add last hidden state

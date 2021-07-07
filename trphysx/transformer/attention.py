@@ -163,7 +163,7 @@ class MaskedAttention(nn.Module):
 
         Args:
             x (Tensor): [batch, seq_length, nx] Input feature.
-            layer_past (List[Tensor], optional): Precomputed self-attention vectors. Defaults to None.
+            layer_past (Tensor, optional): [2, batch, n_head, seq_length, nx] Precomputed self-attention vectors. Defaults to None.
             attention_mask (Tensor, optional): Optional defined attention mask. Applied before soft mask.
                  Defaults to None.
             head_mask (Tensor, optional): Optional attention value mask. Applied after softmax Defaults to None.
