@@ -73,7 +73,7 @@ class GenerationMixin:
         attention_mask: LongTensor = None,
         use_cache: bool = False,
         **model_specific_kwargs
-    ) -> Tensor:
+    ) -> Tuple[Tensor]:
         """Generated a predicted sequence of features
 
         Args:
@@ -85,7 +85,7 @@ class GenerationMixin:
             use_cache (bool, optional): Cache past transformer states for faster generation. Defaults to False.
 
         Returns:
-            Tensor: [batch, max_length, n_embed] Predicted feature tensor
+            Tuple[Tensor]: [batch, max_length, n_embed] Predicted feature tensor, additional optional transformer outputs.
         """
         max_length = max_length if max_length is not None else self.config.max_length
         use_cache = use_cache if use_cache is not None else self.config.use_cache
@@ -117,7 +117,7 @@ class GenerationMixin:
         max_length: int,
         use_cache: bool = None,
         **model_specific_kwargs
-    ) -> Tensor:
+    ) -> Tuple[Tensor]:
         """Function that calls model forward to predict 
 
         Args:
@@ -129,7 +129,7 @@ class GenerationMixin:
             use_cache (bool, optional): [description]. Defaults to None.
 
         Returns:
-            Tensor: [batch, max_length, n_embed] Predicted feature tensor
+            Tuple[Tensor]: [batch, max_length, n_embed] Predicted feature tensor, additional optional transformer outputs.
         """
         past = None
 
@@ -166,7 +166,7 @@ class GenerationMixin:
                 # Dim [keys/query, batch, heads, tsteps, n_embed]
                 # past = tuple(attention_state[:,:,:,1:] for attention_state in past)
 
-        return inputs_embeds
+        return (inputs_embeds, ) + outputs[1:]
 
     @staticmethod
     def _reorder_cache(past: Tuple, beam_idx: Tensor) -> Tuple[Tensor]:

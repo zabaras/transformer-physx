@@ -100,6 +100,9 @@ class TrainingArguments:
     eval_steps: Optional[int] = field(
         default=25, metadata={"help": "Epoch stride to evaluate validation data-set"}
     )
+    plot_max: Optional[int] = field(
+        default=3, metadata={"help": "Max number of eval cases to plot"}
+    )
 
     epoch_start: Optional[int] = field(
         default=0, metadata={"help": "Epoch to start training at"}

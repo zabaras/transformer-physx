@@ -93,7 +93,6 @@ class PhysformerTrain(PhysformerBase):
             max_length = max_length,
             **kwargs
         )
-
         pred_embeds = outputs[0]
 
         # Flatten the tokens

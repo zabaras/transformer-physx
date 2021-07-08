@@ -59,7 +59,7 @@ class Trainer:
         train_dataset: Dataset = None,
         eval_dataset: Dataset = None,
         embedding_model: EmbeddingModel = None,
-        viz: Viz = None,
+        viz: Viz = None
     ) -> None:
         
         self.model = model.to(args.src_device)
@@ -286,7 +286,6 @@ class Trainer:
         """
 
         eval_dataloader = self.get_eval_dataloader()
-        self.model.eval()
 
         eval_error = 0
         state_error = 0
@@ -298,18 +297,19 @@ class Trainer:
             del inputs['states']
 
             if mbidx == 0:
-                timestep_error = torch.zeros(inputs['inputs_embeds'].size(1))            
+                timestep_error = torch.zeros(inputs['labels_embeds'].size(1))            
 
-            pred_error0, timestep_error0, pred_embeds = self.eval_step()
+            pred_error0, timestep_error0, pred_embeds = self.eval_step(self.model, inputs)
 
             eval_error += pred_error0/len(eval_dataloader)
             timestep_error += timestep_error0/len(eval_dataloader)
-
-            state_error0 = self.eval_states(pred_embeds, states, epoch)
+            
+            plot_id = mbidx*self.args.eval_batch_size # Plotting id used to index figures
+            state_error0 = self.eval_states(pred_embeds, states, epoch, plot_id=plot_id)
             state_error += state_error0/len(eval_dataloader)
 
         logger.info('Eval embedding error: {:.02f}, State error: {:.02f}'.format(eval_error, state_error))
-        self.log_metrics.push(eval_epoch=epoch, eval_error=eval_error, state_error=state_error)
+        self.log_metrics.push(eval_epoch=epoch, eval_error=float(eval_error), state_error=float(state_error))
         self.log_metrics.time_error = timestep_error.cpu().numpy()
 
         return {'eval_error': eval_error}
@@ -326,30 +326,39 @@ class Trainer:
             Tuple[float, Tensor, Tensor]: Tuple containing: prediction error value, 
                 time-step error, predicted embeddings.
         """
+        model.eval()
         for k, v in inputs.items():
             if isinstance(v, torch.Tensor):
                 inputs[k] = v.to(self.args.src_device)
 
         # Training head forward
-        outputs = self.model.evaluate(**inputs)
+        outputs = model.evaluate(**inputs)
         pred_error = outputs[0] # Loss value is always the first output
-        
+
         # Compute loss at each time-step
         mseLoss = nn.MSELoss(reduction='none') # Manual summing
-        timestep_error = mseLoss(outputs[1], outputs[2]).mean(dim=tuple(0,2)).cpu()
+        timestep_error = mseLoss(outputs[1], outputs[2]).mean(dim=(0,2)).cpu()
 
         return pred_error, timestep_error, outputs[1]
 
     @torch.no_grad()
-    def eval_states(self, pred_embeds: Tensor, states: Any, epoch: int = None, plot: bool = True) -> float:
+    def eval_states(
+        self, 
+        pred_embeds: Tensor, 
+        states: Any, 
+        epoch: int = None, 
+        plot_id: int = 0, 
+        plot: bool = True
+    ) -> float:
         """Evaluates the predicted states by recovering the state space from
         the predicted embedding vectors. Can be overloaded for cases with
         special methods for recovering the state field.
 
         Args:
-            pred_embeds (Tensor): Predicted embedded vectors
+            pred_embeds (Tensor): [B, T, n_embed] Predicted embedded vectors
             states (Any): Target states / data for recovery 
             epoch (int, optional): Current epoch, used for naming figures. Defaults to None.
+            plot_id (int, optional): Secondary plotting id to distinguish between numerical cases. Defaults to 0.
             plot (bool, optional): Plot models states. Defaults to True.
 
         Returns:
@@ -364,14 +373,24 @@ class Trainer:
         device = self.embedding_model.devices[0]
         
         x_in = pred_embeds.contiguous().view(-1, pred_embeds.size(-1)).to(device)
-        out = self.embedder.recover(x_in)
+        out = self.embedding_model.recover(x_in)
         out = out.view([bsize, tsize] + self.embedding_model.input_dims)
 
         mse = nn.MSELoss()
         state_error = mse(out, states)
 
-        if self.viz:
-            self.viz.plotPrediction(out[0], states[0], self.args.plot_dir, epoch=epoch, pid=0)
-            self.viz.plotPrediction(out[-1], states[-1], self.args.plot_dir, epoch=epoch, pid=1)
+        if self.viz and plot:
+            # Loop through mini batch and plot eval cases
+            for i in range(bsize):
+                plot_id += i
+                # Dont plot if exceed max plot limit
+                if plot_id < self.args.plot_max:
+                    self.viz.plotPrediction(
+                        out[i], 
+                        states[i],
+                        self.args.plot_dir, 
+                        epoch=epoch, 
+                        pid=plot_id
+                    )
 
         return state_error

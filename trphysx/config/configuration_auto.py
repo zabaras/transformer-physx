@@ -58,13 +58,14 @@ class AutoPhysConfig:
             config_file = model_name_or_path
             config_dict = cls.from_json_file(config_file)
         else:
-            config_dict = {"model_type": model_name_or_path}
+            config_dict = {}
 
         # First check if the model name is a pre-defined config
         if(model_name_or_path in CONFIG_MAPPING.keys()):
-            config_class = CONFIG_MAPPING[config_dict["model_type"]]
+            config_class = CONFIG_MAPPING[model_name_or_path]
             # Init config class
-            config = config_class(config_dict, **kwargs)
+            config = config_class(**kwargs)
+            config.update(config_dict)
         else:
             config = PhysConfig.from_dict(config_dict, **kwargs)
 

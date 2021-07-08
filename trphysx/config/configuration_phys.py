@@ -50,7 +50,7 @@ class PhysConfig(object):
     model_type: str = ""
 
     def __init__(self, **kwargs) -> None:
-
+        print(kwargs)
         # Transformer architecture parameters
         self.n_ctx = kwargs.pop("n_ctx")
         self.n_embd = kwargs.pop("n_embd")
