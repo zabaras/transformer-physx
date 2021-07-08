@@ -22,7 +22,7 @@ if __name__ == "__main__":
     sys.argv = sys.argv + ["--train_batch_size", "32"]
     sys.argv = sys.argv + ["--stride", "64"]
     sys.argv = sys.argv + ["--n_train", "2048"]
-    sys.argv = sys.argv + ["--save_steps", "10"]
+    sys.argv = sys.argv + ["--save_steps", "25"]
     sys.argv = sys.argv + ["--n_eval", "16"]
 
     # Parse arguments using the hugging face argument parser
@@ -87,7 +87,6 @@ if __name__ == "__main__":
         train_dataset = training_data, 
         eval_dataset = eval_data, 
         embedding_model = embedding_model,
-        viz=viz
-    )
+        viz=viz )
     
     trainer.train()

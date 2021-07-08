@@ -105,7 +105,7 @@ class LorenzViz(Viz):
         plt.close('all')
         mpl.rcParams['font.family'] = ['serif'] # default is sans-serif
         mpl.rcParams['figure.dpi'] = 300
-        rc('text', usetex=True)
+        # rc('text', usetex=True)
         # Set up figure
         fig = plt.figure(figsize=(10, 10))
         ax = fig.add_subplot(1, 1, 1, projection='3d')
@@ -158,7 +158,7 @@ class LorenzViz(Viz):
         plt.close('all')
         mpl.rcParams['font.family'] = ['serif']  # default is sans-serif
         mpl.rcParams['figure.dpi'] = 300
-        rc('text', usetex=True)
+        # rc('text', usetex=True)
         # Set up figure
         fig, ax = plt.subplots(1, nplots, figsize=(6*nplots, 6), subplot_kw={'projection': '3d'})
         plt.subplots_adjust(wspace=0.025)
@@ -210,7 +210,7 @@ class LorenzViz(Viz):
         plt.close('all')
         mpl.rcParams['font.family'] = ['serif'] # default is sans-serif
         mpl.rcParams['figure.dpi'] = 300
-        rc('text', usetex=True)
+        # rc('text', usetex=True)
         # Set up figure
         fig = plt.figure(figsize=(10,10))
         ax = fig.add_subplot(1, 1, 1, projection='3d')
