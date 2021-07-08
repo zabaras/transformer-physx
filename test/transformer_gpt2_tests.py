@@ -51,4 +51,4 @@ if __name__ == "__main__":
     inputs_embeds = torch.randn(batch_size, 1, config.n_embd)
     output = model.generate(inputs_embeds=inputs_embeds, max_length=n_steps, use_cache=False)
 
-    assert output.size() == torch.Size((batch_size, n_steps, config.n_embd))
+    assert output[0].size() == torch.Size((batch_size, n_steps, config.n_embd))
