@@ -150,6 +150,9 @@ pretrained/
 gmsh/
 .idea/
 
+trphysx.egg-info/
+
 .vscode/
 _site/
 .sass-cache/
+
