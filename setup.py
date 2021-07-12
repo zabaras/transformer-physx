@@ -35,7 +35,7 @@ setup(
     # For a discussion on single-sourcing the version across setup.py and the
     # project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.0.2',  # Required
+    version='0.0.4',  # Required
 
     # This is a one-line description or tagline of what your project does. This
     # corresponds to the "Summary" metadata field:
@@ -93,16 +93,16 @@ setup(
     # the `py_modules` argument instead as follows, which will expect a file
     # called `my_module.py` to exist:
     #
-    py_modules=["trphysx", 
-    "trphysx.config", 
-    "trphysx.data_utils",
-    "trphysx.embedding",
-    "trphysx.embedding.training_utils",
-    "trphysx.transformer",
-    "trphysx.utils",
-    "trphysx.viz"],
+    # py_modules=["trphysx", 
+    # "trphysx.config", 
+    # "trphysx.data_utils",
+    # "trphysx.embedding",
+    # "trphysx.embedding.training_utils",
+    # "trphysx.transformer",
+    # "trphysx.utils",
+    # "trphysx.viz"],
     #
-    # packages=find_packages(),  # Required
+    packages=find_packages(),  # Required
 
     # Specify which Python versions you support. In contrast to the
     # 'Programming Language' classifiers above, 'pip install' will check this
