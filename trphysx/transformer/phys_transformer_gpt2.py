@@ -15,7 +15,7 @@ from torch import nn
 from .attention import MaskedAttention
 from .utils import Conv1D, ACT2FN
 from .phys_transformer_base import PhysformerBase
-from .generate_utils import GenerationMixin, LongTensor
+from .generate_utils import GenerationMixin
 from ..config.configuration_phys import PhysConfig
 
 logger = logging.getLogger(__name__)

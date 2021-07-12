@@ -35,7 +35,7 @@ setup(
     # For a discussion on single-sourcing the version across setup.py and the
     # project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.0.1',  # Required
+    version='0.0.2',  # Required
 
     # This is a one-line description or tagline of what your project does. This
     # corresponds to the "Summary" metadata field:
@@ -84,7 +84,7 @@ setup(
 
     # When your source code is in a subdirectory under the project root, e.g.
     # `src/`, it is necessary to specify the `package_dir` argument.
-    package_dir={'': 'trphysx'},  # Optional
+    package_dir={'': '.'},  # Optional
 
     # You can just specify package directories manually here if your project is
     # simple. Or you can use find_packages().
@@ -93,9 +93,16 @@ setup(
     # the `py_modules` argument instead as follows, which will expect a file
     # called `my_module.py` to exist:
     #
-    #   py_modules=["my_module"],
+    py_modules=["trphysx", 
+    "trphysx.config", 
+    "trphysx.data_utils",
+    "trphysx.embedding",
+    "trphysx.embedding.training_utils",
+    "trphysx.transformer",
+    "trphysx.utils",
+    "trphysx.viz"],
     #
-    packages=find_packages(where='trphysx'),  # Required
+    # packages=find_packages(),  # Required
 
     # Specify which Python versions you support. In contrast to the
     # 'Programming Language' classifiers above, 'pip install' will check this
@@ -111,8 +118,9 @@ setup(
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=['torch >= 1.7.0', 
         'filelock>=3.0.0', 
-        'scipy>=1.5.0', 
-        'matplotlib>=3.3.0'],  # Optional
+        'h5py>=2.9.0',
+        'numpy>=1.15.0',
+        'matplotlib>=3.0.0'],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). Users will be able to install these using the "extras"
