@@ -1,5 +1,16 @@
+"""
+=====
+Training transformer model for the Lorenz numerical example.
+This is a built-in model from the paper.
+
+Distributed by: Notre Dame SCAI Lab (MIT Liscense)
+- Associated publication:
+url: https://arxiv.org/abs/2010.03957
+doi: 
+github: https://github.com/zabaras/transformer-physx
+=====
+"""
 import sys
-sys.path.append('../..')
 import logging
 import torch
 from trphysx.config import HfArgumentParser

@@ -73,8 +73,8 @@ class EmbeddingTrainer:
 
         set_seed(self.args.seed)
 
-    def trainKoopman(self, training_loader:DataLoader, eval_dataloader:DataLoader) -> None:
-        """Training loop for the Koopman embedding model
+    def train(self, training_loader:DataLoader, eval_dataloader:DataLoader) -> None:
+        """Training loop for the embedding model
 
         Args:
             training_loader (DataLoader): Training dataloader

@@ -109,6 +109,7 @@ class LorenzDataHandler(EmbeddingDataHandler):
         """
         logger.info('Creating training loader.')
         assert os.path.isfile(file_path), "Training HDF5 file {} not found".format(file_path)
+        
         examples = []
         with h5py.File(file_path, "r") as f:
             # Iterate through stored time-series
@@ -164,6 +165,7 @@ class LorenzDataHandler(EmbeddingDataHandler):
         """
         logger.info('Creating testing loader')
         assert os.path.isfile(file_path), "Eval HDF5 file {} not found".format(file_path)
+
         examples = []
         with h5py.File(file_path, "r") as f:
             # Iterate through stored time-series
