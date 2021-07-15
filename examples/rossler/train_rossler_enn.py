@@ -113,15 +113,28 @@ class RosslerDataHandler(EmbeddingDataHandler):
         training_loader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=data_collator, drop_last=True)
         return training_loader
 
-    def createTestingLoader(self, file_path: str, #hdf5 file
+    def createTestingLoader(self, 
+        file_path: str,
         block_size: int,
         ndata:int = -1,
         batch_size:int=32,
         shuffle=False
     ) -> DataLoader:
-        '''
-        Loads time-series data and creates testing loader
-        '''
+        """Creating testing/validation data loader for Rossler system.
+        For a data case with time-steps [0,T], this method extract a smaller
+        time-series to be used for testing [0, S], s.t. S < T.
+
+        Args:
+            file_path (str): Path to HDF5 file with testing data
+            block_size (int): The length of testing time-series
+            ndata (int, optional): Number of testing time-series. If negative, all of the provided 
+            data will be used. Defaults to -1.
+            batch_size (int, optional): Testing batch size. Defaults to 32.
+            shuffle (bool, optional): Turn on mini-batch shuffling in dataloader. Defaults to False.
+
+        Returns:
+            (DataLoader): Testing/validation data loader
+        """
         logger.info('Creating testing loader')
         assert os.path.isfile(file_path), "Testing HDF5 file {} not found".format(file_path)
         
@@ -158,8 +171,8 @@ class RosslerDataHandler(EmbeddingDataHandler):
 if __name__ == '__main__':
 
     sys.argv = sys.argv + ["--exp-name", "rossler"]
-    sys.argv = sys.argv + ["--training_h5_file", "../../data/rossler/rossler_training.hdf5"]
-    sys.argv = sys.argv + ["--eval_h5_file", "../../data/rossler/rossler_valid.hdf5"]
+    sys.argv = sys.argv + ["--training_h5_file", "./data/rossler_training.hdf5"]
+    sys.argv = sys.argv + ["--eval_h5_file", "./data/rossler_valid.hdf5"]
     sys.argv = sys.argv + ["--stride", "16"]
     sys.argv = sys.argv + ["--batch-size", "256"]
     sys.argv = sys.argv + ["--block-size", "16"]

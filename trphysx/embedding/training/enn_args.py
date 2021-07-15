@@ -19,7 +19,7 @@ class EmbeddingParser(argparse.ArgumentParser):
     """
     def __init__(self):
         super().__init__(description='Arguments for training the embedding models for transformers of physical systems')
-        self.add_argument('--exp_dir', type=str, default="./embedding", help='directory to save experiments')
+        self.add_argument('--exp_dir', type=str, default="./outputs", help='directory to save experiments')
         self.add_argument('--exp_name', type=str, default="lorenz", help='experiment name')
 
         # data
@@ -72,10 +72,10 @@ class EmbeddingParser(argparse.ArgumentParser):
         else:
             args = self.parse_args()
 
-        args.run_dir = args.exp_dir + '/{}_ntrain{}'.format(args.exp_name, args.ntrain)
+        args.run_dir = os.path.join(args.exp_dir, "embedding_{}_ntrain{}".format(args.exp_name, args.ntrain))
+        args.ckpt_dir = os.path.join(args.run_dir,"checkpoints")
+        args.pred_dir = os.path.join(args.run_dir, "predictions")
 
-        args.ckpt_dir = args.run_dir + '/checkpoints'
-        args.pred_dir = args.run_dir + "/predictions"
         if(dirs):
             self.mkdirs(args.run_dir, args.ckpt_dir, args.pred_dir)
 
@@ -88,7 +88,7 @@ class EmbeddingParser(argparse.ArgumentParser):
 
         # Dump args into JSON for reference
         if dirs:
-            with open(args.run_dir + "/args.json", 'w') as args_file:
+            with open(os.path.join(args.run_dir, "args.json"), 'w') as args_file:
                 json.dump(vars(args), args_file, indent=4)
 
         return args

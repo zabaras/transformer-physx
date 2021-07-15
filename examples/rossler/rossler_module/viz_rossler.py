@@ -20,6 +20,8 @@ from matplotlib.patches import Rectangle
 from matplotlib.legend_handler import HandlerBase
 from trphysx.viz import Viz
 
+Tensor = torch.Tensor,
+
 # Interface to LineCollection:
 def _colorline3d(x, y, z, t=None, cmap=plt.get_cmap('viridis'), linewidth=1, alpha=1.0, ax=None):
     '''
@@ -60,29 +62,29 @@ class HandlerColormap(HandlerBase):
         return stripes
 
 class RosslerViz(Viz):
-    """Visualization class for Lorenz ODE
+    """Visualization class for Rosler ODE
 
     Args:
-        plot_dir (Optional[str], optional): Directory to save visualizations in. Defaults to None.
+        plot_dir (str, optional): Directory to save visualizations in. Defaults to None.
     """
-    def __init__(self, plot_dir:Optional[str] = None):
+    def __init__(self, plot_dir:str = None) -> None:
         super().__init__(plot_dir=plot_dir)
 
     def plotPrediction(self,
-            y_pred:torch.Tensor,
-            y_target:torch.Tensor,
-            plot_dir:Optional[str] = None,
-            epoch:Optional[int] = None,
-            pid:Optional[int] = 0,
-        ):
-        """Plots a 3D line of a single Lorenz prediction
+        y_pred: Tensor,
+        y_target: Tensor,
+        plot_dir: str = None,
+        epoch: int = None,
+        pid: int = 0
+    ) -> None:
+        """Plots a 3D line of a single Rossler prediction
 
         Args:
-            y_pred (torch.Tensor): [T, 3] Prediction tensor.
-            y_target (torch.Tensor): [T, 3] Target tensor.
-            plot_dir (Optional[str], optional): Directory to save figure, overrides plot_dir one if provided. Defaults to None.
-            epoch (Optional[int], optional): Current epoch, used for file name. Defaults to None.
-            pid (int, Optional): Optional plotting id for indexing file name manually, Defaults to 0.
+            y_pred (Tensor): [T, 3] Prediction tensor.
+            y_target (Tensor): [T, 3] Target tensor.
+            plot_dir (str, optional): Directory to save figure, overrides plot_dir one if provided. Defaults to None.
+            epoch (int, optional): Current epoch, used for file name. Defaults to None.
+            pid (int, optional): Optional plotting id for indexing file name manually, Defaults to 0.
         """
         # Convert to numpy array
         y_pred = y_pred.detach().cpu().numpy()
@@ -118,22 +120,22 @@ class RosslerViz(Viz):
         self.saveFigure(plot_dir, file_name)
 
     def plotMultiPrediction(self,
-            y_pred: torch.Tensor, # [mb, t, 3]
-            y_target: torch.Tensor, # [mb, t, 3]
-            plot_dir: Optional[str] = None,
-            epoch: Optional[int] = None,  # Epoch for file_name
-            pid: Optional[int] = 0,  # Secondary plot ID
-            nplots:int = 2,
-        ):
+        y_pred: Tensor,
+        y_target: Tensor,
+        plot_dir: str = None,
+        epoch: int = None,
+        pid: int = 0,
+        nplots: int = 2
+    ) -> None:
         """Plots the 3D lines of multiple Lorenz predictions
 
         Args:
-            y_pred (torch.Tensor): [T, 3] Prediction tensor.
-            y_target (torch.Tensor): [T, 3] Target tensor.
-            plot_dir (Optional[str], optional): Directory to save figure, overrides plot_dir one if provided. Defaults to None.
-            epoch (Optional[int], optional): Current epoch, used for file name. Defaults to None.
-            pid (int, Optional): Optional plotting id for indexing file name manually, Defaults to 0.
-            nplots (int, Optional): Number of cases to plot, Defaults to 2.
+            y_pred (Tensor): [T, 3] Prediction tensor.
+            y_target (Tensor): [T, 3] Target tensor.
+            plot_dir (str, optional): Directory to save figure, overrides plot_dir one if provided. Defaults to None.
+            epoch (int, optional): Current epoch, used for file name. Defaults to None.
+            pid (int, optional): Optional plotting id for indexing file name manually, Defaults to 0.
+            nplots (int, optional): Number of cases to plot, Defaults to 2.
         """
         assert y_pred.size(0) >= nplots, 'Number of provided predictions is less than the requested number of subplots'
         assert y_target.size(0) >= nplots, 'Number of provided targets is less than the requested number of subplots'
@@ -164,6 +166,7 @@ class RosslerViz(Viz):
         cmap_handles = [Rectangle((0, 0), 1, 1) for _ in cmaps]
         handler_map = dict(zip(cmap_handles,
                                [HandlerColormap(cm, num_stripes=10) for cm in cmaps]))
+
         # Create custom legend with color map rectangels
         ax[-1].legend(handles=cmap_handles, labels=['Prediction', 'Target'], handler_map=handler_map, loc='upper right',
                   framealpha=0.95)
@@ -172,55 +175,5 @@ class RosslerViz(Viz):
             file_name = 'rosslerMultiPred{:d}_{:d}'.format(pid, epoch)
         else:
             file_name = 'rosslerMultiPred{:d}'.format(pid)
-
-        self.saveFigure(plot_dir, file_name)
-
-    def plotPredictionScatter(self,
-            y_pred:torch.Tensor,
-            plot_dir:Optional[str] = None,
-            epoch:Optional[int] = None,
-            pid:Optional[int] = 0
-        ):
-        """Plots scatter plots of a Lorenz prediction contoured based on distance from the basins
-
-        Args:
-            y_pred (torch.Tensor): [T, 3] Prediction tensor.
-            plot_dir (Optional[str], optional): Directory to save figure, overrides plot_dir one if provided. Defaults to None.
-            epoch (Optional[int], optional): Current epoch, used for file name. Defaults to None.
-            pid (int, Optional): Optional plotting id for indexing file name manually, Defaults to 0.
-        """
-        # Convert to numpy array
-        y_pred = y_pred.detach().cpu().numpy()
-
-        plt.close('all')
-        mpl.rcParams['font.family'] = ['serif'] # default is sans-serif
-        mpl.rcParams['figure.dpi'] = 300
-        rc('text', usetex=True)
-        # Set up figure
-        fig = plt.figure(figsize=(10,10))
-        ax = fig.add_subplot(1, 1, 1, projection='3d')
-
-        cmap = plt.get_cmap("plasma")
-        # Lorenz attraction centers
-        s=10
-        r=28
-        b=2.667
-        cp0 = np.array([np.sqrt(b*(r-1)),np.sqrt(b*(r-1)),r-1])
-        cp1 = np.array([-np.sqrt(b*(r-1)),-np.sqrt(b*(r-1)),r-1])
-
-        c = np.minimum(np.sqrt((y_pred[:,0]-cp0[0])**2 + (y_pred[:,1]-cp0[1])**2 + (y_pred[:,2]-cp0[2])**2),
-        np.sqrt((y_pred[:,0]-cp1[0])**2 + (y_pred[:,1]-cp1[1])**2 + (y_pred[:,2]-cp1[2])**2))
-        c = np.maximum(0, 1 - c/25)
-
-        ax.set_xlim([-20,20])
-        ax.set_ylim([-20,20])
-        ax.set_zlim([10,50])
-
-        ax.scatter(y_pred[:,0], y_pred[:,1], y_pred[:,2], c=c)
-
-        if(not epoch is None):
-            file_name = 'rosslerScatter{:d}_{:d}'.format(pid, epoch)
-        else:
-            file_name = 'rosslerScatter{:d}'.format(pid)
 
         self.saveFigure(plot_dir, file_name)

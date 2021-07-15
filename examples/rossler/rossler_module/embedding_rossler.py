@@ -10,18 +10,25 @@ github: https://github.com/zabaras/transformer-physx
 import torch
 import torch.nn as nn
 import numpy as np
+from typing import Tuple
 from trphysx.embedding import EmbeddingModel
 from torch.autograd import Variable
+from trphysx.config.configuration_phys import PhysConfig
+from trphysx.embedding import EmbeddingTrainingHead
+
+Tensor = torch.Tensor
+TensorTuple = Tuple[torch.Tensor]
+FloatTuple = Tuple[float]
 
 class RosslerEmbedding(EmbeddingModel):
-    """Embedding Koopman model for the Rossler ODE system
+    """Embedding model for the Rossler ODE system
 
     Args:
-        config (:class:`config.configuration_phys.PhysConfig`) Configuration class with transformer/embedding parameters
+        config (PhysConfig) Configuration class with transformer/embedding parameters
     """
     model_name = "embedding_rossler"
 
-    def __init__(self, config):
+    def __init__(self, config: PhysConfig) -> None:
         """Constructor method
         """
         super().__init__(config)
@@ -61,7 +68,7 @@ class RosslerEmbedding(EmbeddingModel):
         self.register_buffer('std', torch.tensor([1., 1., 1.]))
         print('Number of embedding parameters: {}'.format( super().num_parameters ))
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> TensorTuple:
         """Forward pass
 
         Args:
@@ -81,40 +88,40 @@ class RosslerEmbedding(EmbeddingModel):
         xhat = self._unnormalize(out)
         return g, xhat
 
-    def embed(self, x):
+    def embed(self, x: Tensor) -> Tensor:
         """Embeds tensor of state variables to Koopman observables
 
         Args:
-            x (torch.Tensor): [B, 3] input feature tensor
+            x (Tensor): [B, 3] input feature tensor
 
         Returns:
-            (torch.Tensor): [B, config.n_embd] Koopman observables
+            (Tensor): [B, config.n_embd] Koopman observables
         """
         x = self._normalize(x)
         g = self.observableNet(x)
         return g
 
-    def recover(self, g):
+    def recover(self, g: Tensor) -> Tensor:
         """Recovers feature tensor from Koopman observables
 
         Args:
-            g (torch.Tensor): [B, config.n_embd] Koopman observables
+            g (Tensor): [B, config.n_embd] Koopman observables
 
         Returns:
-            (torch.Tensor): [B, 3] Physical feature tensor
+            (Tensor): [B, 3] Physical feature tensor
         """
         out = self.recoveryNet(g)
         x = self._unnormalize(out)
         return x
 
-    def koopmanOperation(self, g):
+    def koopmanOperation(self, g: Tensor) -> Tensor:
         """Applies the learned koopman operator on the given observables.
 
         Args:
-            (torch.Tensor): [B, config.n_embd] Koopman observables
+            (Tensor): [B, config.n_embd] Koopman observables
 
         Returns:
-            (torch.Tensor): [B, config.n_embd] Koopman observables at the next time-step
+            (Tensor): [B, config.n_embd] Koopman observables at the next time-step
         """
         # Koopman operator
         kMatrix = Variable(torch.zeros(self.obsdim, self.obsdim)).to(self.kMatrixUT.device)
@@ -132,7 +139,7 @@ class RosslerEmbedding(EmbeddingModel):
         return gnext.squeeze(-1) # Squeeze empty dim from bmm
 
     @property
-    def koopmanOperator(self, requires_grad=True):
+    def koopmanOperator(self, requires_grad: bool = True) -> Tensor:
         """Current Koopman operator
 
         Args:
@@ -143,39 +150,47 @@ class RosslerEmbedding(EmbeddingModel):
         else:
             return self.kMatrix
 
-    def _normalize(self, x):
+    def _normalize(self, x: Tensor) -> Tensor:
         return (x - self.mu.unsqueeze(0))/self.std.unsqueeze(0)
 
-    def _unnormalize(self, x):
+    def _unnormalize(self, x: Tensor) -> Tensor:
         return self.std.unsqueeze(0)*x + self.mu.unsqueeze(0)
 
     @property
     def koopmanDiag(self):
         return self.kMatrixDiag
 
-class RosslerEmbeddingTrainer(nn.Module):
+class RosslerEmbeddingTrainer(EmbeddingTrainingHead):
     """Training head for the Rossler embedding model for parallel training
 
     Args:
-        config (:class:`config.configuration_phys.PhysConfig`) Configuration class with transformer/embedding parameters
+        config (PhysConfig) Configuration class with transformer/embedding parameters
     """
-    def __init__(self, config):
+    def __init__(self, config: PhysConfig) -> None:
         """Constructor method
         """
         super().__init__()
         self.embedding_model = RosslerEmbedding(config)
 
-    def forward(self, input_states=None):
-        '''
-        Trains model for a single epoch
-        '''
+    def forward(self, states: Tensor) -> FloatTuple:
+        """Trains model for a single epoch
+
+        Args:
+            states (Tensor): [B, T, 3] Time-series feature tensor
+
+        Returns:
+            FloatTuple: Tuple containing:
+            
+                | (float): Koopman based loss of current epoch
+                | (float): Reconstruction loss
+        """
         self.embedding_model.train()
         device = self.embedding_model.devices[0]
 
         loss_reconstruct = 0
         mseLoss = nn.MSELoss()
 
-        xin0 = input_states[:,0].to(device) # Time-step
+        xin0 = states[:,0].to(device) # Time-step
 
         # Model forward for both time-steps
         g0, xRec0 = self.embedding_model(xin0)
@@ -184,8 +199,8 @@ class RosslerEmbeddingTrainer(nn.Module):
 
         g1_old = g0
         # Koopman transform
-        for t0 in range(1, input_states.shape[1]):
-            xin0 = input_states[:,t0,:].to(device) # Next time-step
+        for t0 in range(1, states.shape[1]):
+            xin0 = states[:,t0,:].to(device) # Next time-step
             _, xRec1 = self.embedding_model(xin0)
 
             g1Pred = self.embedding_model.koopmanOperation(g1_old)
@@ -198,6 +213,37 @@ class RosslerEmbeddingTrainer(nn.Module):
             g1_old = g1Pred
 
         return loss, loss_reconstruct
+
+    def evaluate(self, states: Tensor) -> Tuple[float, Tensor, Tensor]:
+        """Evaluates the embedding models reconstruction error and returns its
+        predictions.
+
+        Args:
+            states (Tensor): [B, T, 3] Time-series feature tensor
+
+        Returns:
+            Tuple[Float, Tensor, Tensor]: Test error, Predicted states, Target states
+        """
+        self.embedding_model.eval()
+        device = self.embedding_model.devices[0]
+
+        mseLoss = nn.MSELoss()
+
+        # Pull out targets from prediction dataset
+        yTarget = states[:,1:].to(device)
+        xInput = states[:,:-1].to(device)
+        yPred = torch.zeros(yTarget.size()).to(device)
+
+        # Test accuracy of one time-step
+        for i in range(xInput.size(1)):
+            xInput0 = xInput[:,i].to(device)
+            g0 = self.embedding_model.embed(xInput0)
+            yPred0 = self.embedding_model.recover(g0)
+            yPred[:,i] = yPred0.squeeze().detach()
+
+        test_loss = mseLoss(yTarget, yPred)
+
+        return test_loss, yPred, yTarget
 
     def save_model(self, *args, **kwargs):
         """
