@@ -158,7 +158,7 @@ class Trainer:
 
         return data_loader
 
-    def train(self):
+    def train(self) -> None:
         """Trains the transformer model
         """
         optimizer = self.optimizers[0]
@@ -243,7 +243,11 @@ class Trainer:
         self.log_metrics.writeToHDF5(os.path.join(self.args.exp_dir, "log_metrics.h5"))
 
 
-    def training_step(self, model: PhysformerTrain, inputs: Dict[str, Any]) -> Tuple[float, Tensor, Tensor]:
+    def training_step(
+        self, 
+        model: PhysformerTrain, 
+        inputs: Dict[str, Any]
+    ) -> Tuple[float, Tensor, Tensor]:
         """Calls a forward pass of the training model and backprops 
         for a single time-step
 
@@ -275,7 +279,10 @@ class Trainer:
         return loss.item(), outputs[1], outputs[2]
 
     @torch.no_grad()
-    def evaluate(self, epoch: int = None) -> Dict[str, float]:
+    def evaluate(
+        self, 
+        epoch: int = None
+    ) -> Dict[str, float]:
         """Run evaluation and return metrics.
 
         Args:
@@ -315,7 +322,11 @@ class Trainer:
         return {'eval_error': eval_error}
 
     @torch.no_grad()
-    def eval_step(self, model: PhysformerTrain, inputs: Dict[str, Any]) -> Tuple[float, Tensor, Tensor]:
+    def eval_step(
+        self, 
+        model: PhysformerTrain, 
+        inputs: Dict[str, Any]
+    ) -> Tuple[float, Tensor, Tensor]:
         """Calls a eval pass of the training model.
 
         Args:
@@ -390,7 +401,6 @@ class Trainer:
                         states[i],
                         self.args.plot_dir, 
                         epoch=epoch, 
-                        pid=plot_id
-                    )
+                        pid=plot_id )
 
         return state_error

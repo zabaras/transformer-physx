@@ -244,16 +244,3 @@ class RosslerEmbeddingTrainer(EmbeddingTrainingHead):
         test_loss = mseLoss(yTarget, yPred)
 
         return test_loss, yPred, yTarget
-
-    def save_model(self, *args, **kwargs):
-        """
-        Saves the embedding model
-        """
-        self.embedding_model.save_model(*args, **kwargs)
-
-
-    def load_model(self, *args, **kwargs):
-        """
-        Load the embedding model
-        """
-        self.embedding_model.load_model(*args, **kwargs)

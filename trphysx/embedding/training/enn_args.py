@@ -14,6 +14,8 @@ import os, errno, json
 import torch
 from typing import List
 
+HOME = os.getcwd()
+
 class EmbeddingParser(argparse.ArgumentParser):
     """Arguments for training embedding models
     """
@@ -72,7 +74,7 @@ class EmbeddingParser(argparse.ArgumentParser):
         else:
             args = self.parse_args()
 
-        args.run_dir = os.path.join(args.exp_dir, "embedding_{}_ntrain{}".format(args.exp_name, args.ntrain))
+        args.run_dir = os.path.join(HOME, args.exp_dir, "embedding_{}_ntrain{}".format(args.exp_name, args.ntrain))
         args.ckpt_dir = os.path.join(args.run_dir,"checkpoints")
         args.pred_dir = os.path.join(args.run_dir, "predictions")
 

@@ -41,7 +41,7 @@ class RosslerDataHandler(EmbeddingDataHandler):
             return len(self.examples)
 
         def __getitem__(self, i) -> Dict[str, torch.Tensor]:
-            return {"input_states": self.examples[i]}
+            return {"states": self.examples[i]}
 
     class RosslerDataCollator:
         """
@@ -50,8 +50,8 @@ class RosslerDataHandler(EmbeddingDataHandler):
         # Default collator
         def __call__(self, examples:List[Dict[str, torch.Tensor]]) -> Dict[str, torch.Tensor]:
             
-            x_data_tensor =  torch.stack([example['input_states'] for example in examples])
-            return {"input_states": x_data_tensor}
+            x_data_tensor =  torch.stack([example['states'] for example in examples])
+            return {"states": x_data_tensor}
 
     def createTrainingLoader(
         self,
@@ -170,12 +170,12 @@ class RosslerDataHandler(EmbeddingDataHandler):
 
 if __name__ == '__main__':
 
-    sys.argv = sys.argv + ["--exp-name", "rossler"]
+    sys.argv = sys.argv + ["--exp_name", "rossler"]
     sys.argv = sys.argv + ["--training_h5_file", "./data/rossler_training.hdf5"]
     sys.argv = sys.argv + ["--eval_h5_file", "./data/rossler_valid.hdf5"]
     sys.argv = sys.argv + ["--stride", "16"]
-    sys.argv = sys.argv + ["--batch-size", "256"]
-    sys.argv = sys.argv + ["--block-size", "16"]
+    sys.argv = sys.argv + ["--batch_size", "256"]
+    sys.argv = sys.argv + ["--block_size", "16"]
     sys.argv = sys.argv + ["--ntrain", "1024"]
     sys.argv = sys.argv + ["--ntest", "8"]
 
