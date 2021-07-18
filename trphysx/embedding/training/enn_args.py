@@ -74,7 +74,8 @@ class EmbeddingParser(argparse.ArgumentParser):
         else:
             args = self.parse_args()
 
-        args.run_dir = os.path.join(HOME, args.exp_dir, "embedding_{}_ntrain{}".format(args.exp_name, args.ntrain))
+        args.run_dir = os.path.join(HOME, args.exp_dir, "embedding_{}".format(args.exp_name), 
+                "ntrain{}_epochs{:d}_batch{:d}".format(args.ntrain, args.epochs, args.batch_size))
         args.ckpt_dir = os.path.join(args.run_dir,"checkpoints")
         args.pred_dir = os.path.join(args.run_dir, "predictions")
 

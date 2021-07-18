@@ -210,7 +210,7 @@ class ArgUtils:
             Tuple[ModelArguments, DataArguments, TrainingArguments]: Updated argument instances
         """
         if(trainingArgs.exp_dir is None):
-            trainingArgs.exp_dir = os.path.join(HOME, 'outputs', '{:s}'.format(modelArgs.config_name), \
+            trainingArgs.exp_dir = os.path.join(HOME, 'outputs', 'transformer_{:s}'.format(modelArgs.config_name), \
                     'ntrain{:d}_epochs{:d}_batch{:d}'.format(dataArgs.n_train, trainingArgs.epochs, trainingArgs.train_batch_size))
             if trainingArgs.notes: # If notes add them to experiment folder name
                 trainingArgs.exp_dir = os.path.join(os.path.dirname(trainingArgs.exp_dir), os.path.basename(trainingArgs.exp_dir)+'_{:s}'.format(trainingArgs.notes))
