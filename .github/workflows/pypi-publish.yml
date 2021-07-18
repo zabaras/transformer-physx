@@ -6,13 +6,9 @@
 name: Build and upload to PyPI
 
 on:
-  push:
-    branches:
-      - main
-
   release:
     types:
-      - published
+      - created
 
 jobs:
   build_wheels:
@@ -54,24 +50,6 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           path: dist/*.tar.gz
-
-  upload_testpypi:
-    needs: [build_wheels, build_sdist]
-    runs-on: ubuntu-latest
-
-    # Uploads to testpypi occur every push to main
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    steps:
-      - uses: actions/download-artifact@v2
-        with:
-          name: artifact
-          path: dist
-
-      - uses: pypa/gh-action-pypi-publish@v1.4.2
-        with:
-          user: __token__
-          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-          repository_url: https://test.pypi.org/legacy/
 
   upload_pypi:
     needs: [build_wheels, build_sdist]
