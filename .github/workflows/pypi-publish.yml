@@ -7,8 +7,7 @@ name: Build and upload to PyPI
 
 on:
   release:
-    types:
-      - created
+    types: [published]
 
 jobs:
   build_wheels:
