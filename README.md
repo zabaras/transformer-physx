@@ -18,7 +18,7 @@ Transformers for Modeling Physical Systems [ [ArXiV](https://arxiv.org/abs/2010.
 | Lorenz | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/zabaras/transformer-physx/blob/main/examples/lorenz/train_lorenz_enn.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/zabaras/transformer-physx/blob/main/examples/lorenz/train_lorenz_transformer.ipynb) |
 | Cylinder Flow | - | - |
 | Gray-Scott | - | - |
-| Rossler | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/zabaras/transformer-physx/blob/main/examples/lorenz/train_rossler_enn.ipynb) | Coming Soon |
+| Rossler | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/zabaras/transformer-physx/blob/main/examples/rossler/train_rossler_enn.ipynb) | Coming Soon |
 
 ### Road Map
 
