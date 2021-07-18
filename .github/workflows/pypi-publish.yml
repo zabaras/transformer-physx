@@ -16,11 +16,8 @@ on:
 
 jobs:
   build_wheels:
-    name: Build wheels on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-20.04, windows-2019, macos-10.15]
+    name: Build pure python wheel
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
@@ -30,12 +27,12 @@ jobs:
         with:
           python-version: '3.8'
 
-      - name: Build wheels
-        uses: pypa/cibuildwheel@v2.0.0
+      - name: Build wheel
+        run: python setup.py bdist_wheel
 
       - uses: actions/upload-artifact@v2
         with:
-          path: ./wheelhouse/*.whl
+          path: dist/*.whl
 
   build_sdist:
     name: Build source distribution
