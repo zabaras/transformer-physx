@@ -6,7 +6,7 @@ from trphysx.config.args import ModelArguments, TrainingArguments, DataArguments
 from rossler_module.configuration_rossler import RosslerConfig
 from rossler_module.embedding_rossler import RosslerEmbedding
 from rossler_module.viz_rossler import RosslerViz
-from rossler_module.dataset_rossler import RosslerDataset, RosslerPredictDataset
+from rossler_module.dataset_rossler import RosslerDataset
 from trphysx.transformer import PhysformerTrain, PhysformerGPT2
 from trphysx.utils.trainer import Trainer
 
@@ -52,7 +52,7 @@ if __name__ == "__main__":
     if(model_args.transformer_file_or_path):
         model.load_model(model_args.transformer_file_or_path)
     
-    # Initialize 
+    # Initialize training and validation datasets
     training_data = RosslerDataset(
         embedding_model, 
         data_args.training_h5_file, 
@@ -61,16 +61,26 @@ if __name__ == "__main__":
         ndata=data_args.n_train, 
         overwrite_cache=data_args.overwrite_cache)
 
-    eval_data = RosslerPredictDataset(
+    eval_data = RosslerDataset(
         embedding_model, 
         data_args.eval_h5_file, 
         block_size=256,
-        neval=data_args.n_eval, 
+        stride=1024,
+        ndata=data_args.n_eval, 
+        eval = True,
         overwrite_cache=data_args.overwrite_cache)
 
     # Optimizer
     optimizer = torch.optim.Adam(model.parameters(), lr=training_args.lr, weight_decay=1e-8)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, 14, 2, eta_min=1e-8)
-    trainer = Trainer(model, training_args, (optimizer, scheduler), train_dataset=training_data, eval_dataset=eval_data, viz=viz)
+    
+    trainer = Trainer(
+        model, 
+        training_args, 
+        (optimizer, scheduler), 
+        train_dataset = training_data, 
+        eval_dataset = eval_data, 
+        embedding_model = embedding_model,
+        viz=viz)
     
     trainer.train()

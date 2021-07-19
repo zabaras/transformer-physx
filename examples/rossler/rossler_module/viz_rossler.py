@@ -75,7 +75,8 @@ class RosslerViz(Viz):
         y_target: Tensor,
         plot_dir: str = None,
         epoch: int = None,
-        pid: int = 0
+        pid: int = 0,
+        nsteps: int = 256
     ) -> None:
         """Plots a 3D line of a single Rossler prediction
 
@@ -84,16 +85,17 @@ class RosslerViz(Viz):
             y_target (Tensor): [T, 3] Target tensor.
             plot_dir (str, optional): Directory to save figure, overrides plot_dir one if provided. Defaults to None.
             epoch (int, optional): Current epoch, used for file name. Defaults to None.
-            pid (int, optional): Optional plotting id for indexing file name manually, Defaults to 0.
+            pid (int, optional): Optional plotting id for indexing file name manually. Defaults to 0.
+            nsteps (int, optional): Number of steps to plot. Defaults to 256.
         """
         # Convert to numpy array
-        y_pred = y_pred.detach().cpu().numpy()
-        y_target = y_target.detach().cpu().numpy()
+        y_pred = y_pred[:nsteps].detach().cpu().numpy()
+        y_target = y_target[:nsteps].detach().cpu().numpy()
 
         plt.close('all')
         mpl.rcParams['font.family'] = ['serif'] # default is sans-serif
         mpl.rcParams['figure.dpi'] = 300
-        rc('text', usetex=True)
+        # rc('text', usetex=True)
         # Set up figure
         fig = plt.figure(figsize=(10, 10))
         ax = fig.add_subplot(1, 1, 1, projection='3d')
@@ -102,9 +104,9 @@ class RosslerViz(Viz):
         _colorline3d(y_pred[:,0], y_pred[:,1], y_pred[:,2], cmap=cmaps[0], ax=ax)
         _colorline3d(y_target[:,0], y_target[:,1], y_target[:,2], cmap=cmaps[1], ax=ax)
 
-        ax.set_xlim([-20,20])
-        ax.set_ylim([-20,20])
-        ax.set_zlim([10,50])
+        ax.set_xlim([np.amin(y_target[:,0])-5, np.amax(y_target[:,0])+5])
+        ax.set_ylim([np.amin(y_target[:,1])-5, np.amax(y_target[:,1])+5])
+        ax.set_zlim([np.amin(y_target[:,2])-5, np.amax(y_target[:,2])+5])
 
         cmap_handles = [Rectangle((0, 0), 1, 1) for _ in cmaps]
         handler_map = dict(zip(cmap_handles,
@@ -146,7 +148,7 @@ class RosslerViz(Viz):
         plt.close('all')
         mpl.rcParams['font.family'] = ['serif']  # default is sans-serif
         mpl.rcParams['figure.dpi'] = 300
-        rc('text', usetex=True)
+        # rc('text', usetex=True)
         # Set up figure
         fig, ax = plt.subplots(1, nplots, figsize=(6*nplots, 6), subplot_kw={'projection': '3d'})
         plt.subplots_adjust(wspace=0.025)
@@ -156,9 +158,9 @@ class RosslerViz(Viz):
             _colorline3d(y_pred[i, :, 0], y_pred[i, :, 1], y_pred[i, :, 2], cmap=cmaps[0], ax=ax[i], alpha=0.6)
             _colorline3d(y_target[i, :, 0], y_target[i, :, 1], y_target[i, :, 2], cmap=cmaps[1], ax=ax[i], alpha=0.6)
 
-            ax[i].set_xlim([-20, 20])
-            ax[i].set_ylim([-20, 20])
-            ax[i].set_zlim([10, 50])
+            ax[i].set_xlim([np.amin(y_target[:,0])-5, np.amax(y_target[:,0])+5])
+            ax[i].set_ylim([np.amin(y_target[:,1])-5, np.amax(y_target[:,1])+5])
+            ax[i].set_zlim([np.amin(y_target[:,2])-5, np.amax(y_target[:,2])+5])
 
             ax[i].set_xlabel('x', fontsize=14)
             ax[i].set_ylabel('y', fontsize=14)
