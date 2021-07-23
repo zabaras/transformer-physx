@@ -56,6 +56,7 @@ setup(
     # https://packaging.python.org/specifications/core-metadata/#home-page-optional
     url='https://github.com/zabaras/transformer-physx',  # Optional
 
+    license='MIT',
 
     author='Nicholas Geneva',  # Optional
     author_email='ngeneva@nd.edu',  # Optional

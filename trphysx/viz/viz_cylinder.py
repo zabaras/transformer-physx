@@ -190,7 +190,7 @@ class CylinderViz(Viz):
         c_min = min([np.amin(vortTarget[:, :, :])+4])
         c_max = 7
         c_min = -7
-        print(vortPred.shape)
+
         for t0 in range(nsteps):
             # Plot target
             ax[0, t0].imshow(vortTarget[t0 * stride, :, :], extent=[-2, 14, -4, 4], cmap=cmap0, origin='lower',
@@ -223,4 +223,82 @@ class CylinderViz(Viz):
         else:
             file_name = 'cylinderVortPred{:d}'.format(pid)
 
+        self.saveFigure(plot_dir, file_name)
+
+
+    def plotEmbeddingPrediction(self,
+        y_pred: Tensor,
+        y_target: Tensor,
+        plot_dir: str = None,
+        epoch: int = None,
+        bidx: int = 0,
+        tidx: int = 0,
+        pid: int = 0
+    ) -> None:
+        """Plots the predicted x-velocity, y-velocity and pressure field contours
+
+        Args:
+            y_pred (Tensor): [B, T, 3, H, W] Prediction tensor.
+            y_target (Tensor): [B, T, 3, H, W] Target tensor.
+            plot_dir (str, optional): Directory to save figure, overrides plot_dir one if provided. Defaults to None.
+            epoch (int, optional): Current epoch, used for file name. Defaults to None.
+            bidx (int, optional): Batch index to plot. Defaults to 0.
+            tidx (int, optional): Timestep index to plot. Defaults to None (plot random time-step).
+            pid (int, optional): Optional plotting id for indexing file name manually. Defaults to 0.
+        """
+        if plot_dir is None:
+            plot_dir = self.plot_dir
+        # Convert to numpy array
+        if tidx is None:
+            tidx = np.random.randint(0, y_pred.size(1))
+        y_pred = y_pred[bidx, tidx].detach().cpu().numpy()
+        y_target = y_target[bidx, tidx].detach().cpu().numpy()
+        y_error = np.power(y_pred - y_target, 2)
+
+        plt.close('all')
+        mpl.rcParams['font.family'] = ['serif']  # default is sans-serif
+        mpl.rcParams['figure.dpi'] = 300
+        mpl.rcParams['xtick.labelsize'] = 2
+        mpl.rcParams['ytick.labelsize'] = 2
+        # rc('text', usetex=True)
+
+        # Set up figure
+        cmap0 = 'viridis'
+        cmap1 = 'inferno'
+        # fig, ax = plt.subplots(2+yPred0.size(0), yPred0.size(2), figsize=(2*yPred0.size(1), 3+3*yPred0.size(0)))
+        fig, ax = plt.subplots(3, 3, figsize=(2.1*3, 2.25))
+        fig.subplots_adjust(wspace=0.1)
+
+        for i, field in enumerate(['ux', 'uy', 'p']):
+            c_max = max([np.amax(y_target[i, :, :])])
+            c_min = min([np.amin(y_target[i, :, :])])
+
+            ax[0,i].imshow(y_target[i, :, :], extent=[-2, 14, -4, 4], cmap=cmap0, origin='lower',
+                                 vmax=c_max, vmin=c_min)
+
+            ax[1,i].imshow(y_pred[i, :, :], extent=[-2, 14, -4, 4], cmap=cmap0, origin='lower',
+                                 vmax=c_max, vmin=c_min)
+
+            ax[2,i].imshow(y_error[i, :, :], extent=[-2, 14, -4, 4], cmap=cmap1, origin='lower')
+            
+            for j in range(3):                
+                ax[j, i].set_yticks(np.linspace(-4, 4, 5))
+
+                for tick in ax[j, i].yaxis.get_major_ticks():
+                    tick.label.set_fontsize(5)
+
+            ax[2, i].set_xticks(np.linspace(-2, 14, 9))
+            for tick in ax[2, i].xaxis.get_major_ticks():
+                    tick.label.set_fontsize(5)
+
+            ax[0, i].set_title(f'{field}', fontsize=8)
+
+        ax[0, 0].set_ylabel('Target', fontsize=8)
+        ax[1, 0].set_ylabel('Prediction', fontsize=8)
+        ax[2, 0].set_ylabel('Error', fontsize=8)
+
+        if (not epoch is None):
+            file_name = 'embeddingPred{:d}_{:d}'.format(pid, epoch)
+        else:
+            file_name = 'embeddingPred{:d}'.format(pid)
         self.saveFigure(plot_dir, file_name)

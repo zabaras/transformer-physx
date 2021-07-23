@@ -74,13 +74,17 @@ class EmbeddingParser(argparse.ArgumentParser):
         else:
             args = self.parse_args()
 
-        args.run_dir = os.path.join(HOME, args.exp_dir, "embedding_{}".format(args.exp_name), 
-                "ntrain{}_epochs{:d}_batch{:d}".format(args.ntrain, args.epochs, args.batch_size))
+        if len(args.notes) > 0:
+            args.run_dir = os.path.join(HOME, args.exp_dir, "embedding_{}".format(args.exp_name), 
+                    "ntrain{}_epochs{:d}_batch{:d}_{:s}".format(args.ntrain, args.epochs, args.batch_size, args.notes))
+        else:
+            args.run_dir = os.path.join(HOME, args.exp_dir, "embedding_{}".format(args.exp_name), 
+                    "ntrain{}_epochs{:d}_batch{:d}".format(args.ntrain, args.epochs, args.batch_size))
         args.ckpt_dir = os.path.join(args.run_dir,"checkpoints")
-        args.pred_dir = os.path.join(args.run_dir, "predictions")
+        args.plot_dir = os.path.join(args.run_dir, "predictions")
 
         if(dirs):
-            self.mkdirs(args.run_dir, args.ckpt_dir, args.pred_dir)
+            self.mkdirs(args.run_dir, args.ckpt_dir, args.plot_dir)
 
         # Set random seed
         if args.seed is None:

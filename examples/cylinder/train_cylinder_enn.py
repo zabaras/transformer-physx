@@ -17,18 +17,19 @@ from torch.optim.lr_scheduler import ExponentialLR
 
 from trphysx.config.configuration_auto import AutoPhysConfig
 from trphysx.embedding.embedding_auto import AutoEmbeddingModel
+from trphysx.viz.viz_auto import AutoViz
 from trphysx.embedding.training import *
 
 logger = logging.getLogger(__name__)
 
 if __name__ == '__main__':
 
-    sys.argv = sys.argv + ["--exp_name", "lorenz"]
-    sys.argv = sys.argv + ["--training_h5_file", "./data/lorenz_training_rk.hdf5"]
-    sys.argv = sys.argv + ["--eval_h5_file", "./data/lorenz_valid_rk.hdf5"]
-    sys.argv = sys.argv + ["--batch_size", "512"]
-    sys.argv = sys.argv + ["--block_size", "16"]
-    sys.argv = sys.argv + ["--ntrain", "2048"]
+    sys.argv = sys.argv + ["--exp_name", "cylinder"]
+    sys.argv = sys.argv + ["--training_h5_file", "./data/cylinder_train.hdf5"]
+    sys.argv = sys.argv + ["--eval_h5_file", "./data/cylinder_valid.hdf5"]
+    sys.argv = sys.argv + ["--batch_size", "32"]
+    sys.argv = sys.argv + ["--block_size", "4"]
+    sys.argv = sys.argv + ["--ntrain", "27"]
 
     # Setup logging
     logging.basicConfig(
@@ -45,6 +46,7 @@ if __name__ == '__main__':
     # Load transformer config file
     config = AutoPhysConfig.load_config(args.exp_name)
     data_handler = AutoDataHandler.load_data_handler(args.exp_name)
+    viz = AutoViz.init_viz(args.exp_name)(args.plot_dir)
 
      # Set up data-loaders
     training_loader = data_handler.createTrainingLoader(args.training_h5_file, block_size=args.block_size, stride=args.stride, ndata=args.ntrain, batch_size=args.batch_size)
@@ -61,5 +63,5 @@ if __name__ == '__main__':
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr*0.995**(args.epoch_start-1), weight_decay=1e-8)
     scheduler = ExponentialLR(optimizer, gamma=0.995)
 
-    trainer = EmbeddingTrainer(model, args, (optimizer, scheduler))
+    trainer = EmbeddingTrainer(model, args, (optimizer, scheduler), viz)
     trainer.train(training_loader, testing_loader)

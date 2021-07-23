@@ -70,12 +70,7 @@ class PhysicalDataset(Dataset):
         with FileLock(lock_path):
 
             if os.path.exists(cached_features_file) and not overwrite_cache:
-                start = time.time()
-                with open(cached_features_file, "rb") as handle:
-                    self.examples, self.states = pickle.load(handle)
-                logger.info(
-                    f"Loading features from cached file {cached_features_file} [took %.3f s]", time.time() - start)
-
+                self.read_cache(cached_features_file)
             else:
                 logger.info(f"Creating features from dataset file at {directory}")
 
@@ -85,13 +80,35 @@ class PhysicalDataset(Dataset):
                 with h5py.File(file_path, "r") as f:
                     self.embed_data(f, embedder, **kwargs)
 
-                start = time.time()
-                os.makedirs(cache_path, exist_ok=True)
-                with open(cached_features_file, "wb") as handle:
-                    pickle.dump((self.examples, self.states), handle, protocol=pickle.HIGHEST_PROTOCOL)
-                logger.info(
-                    "Saving features into cached file %s [took %.3f s]", cached_features_file, time.time() - start
-                )
+                self.write_cache(cached_features_file)
+
+    def read_cache(self, cached_features_file:str) -> None:
+        """Default method to read cache file into object.
+
+        Args:
+            cached_features_file (str): Cache file path
+        """
+        assert os.path.isfile(cached_features_file), 'Provided cache file path does not exist!'
+
+        start = time.time()
+        with open(cached_features_file, "rb") as handle:
+            self.examples, self.states = pickle.load(handle)
+        logger.info(
+            f"Loading features from cached file {cached_features_file} [took %.3f s]", time.time() - start)
+
+    def write_cache(self, cached_features_file:str) -> None:
+        """Default method to write cache file .
+
+        Args:
+            cached_features_file (str): Cache file path
+        """
+        start = time.time()
+        os.makedirs(os.path.dirname(cached_features_file), exist_ok=True)
+        with open(cached_features_file, "wb") as handle:
+            pickle.dump((self.examples, self.states), handle, protocol=pickle.HIGHEST_PROTOCOL)
+        logger.info(
+            "Saving features into cached file %s [took %.3f s]", cached_features_file, time.time() - start
+        )
 
     @abstractmethod
     def embed_data(self, h5_file: h5py.File, embedder: EmbeddingModel):

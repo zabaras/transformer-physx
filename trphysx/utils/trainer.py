@@ -300,7 +300,7 @@ class Trainer:
 
         for mbidx, inputs in enumerate(eval_dataloader):
 
-            states = inputs['states'].to(self.args.src_device)
+            states = inputs['states']
             del inputs['states']
 
             if mbidx == 0:
@@ -383,6 +383,7 @@ class Trainer:
         tsize = pred_embeds.size(1)
         device = self.embedding_model.devices[0]
         
+        states = states.to(device)
         x_in = pred_embeds.contiguous().view(-1, pred_embeds.size(-1)).to(device)
         out = self.embedding_model.recover(x_in)
         out = out.view([bsize, tsize] + self.embedding_model.input_dims)

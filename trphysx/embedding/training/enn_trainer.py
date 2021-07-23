@@ -43,11 +43,11 @@ class EmbeddingTrainer:
         viz (Viz, optional): Visualization class. Defaults to None.
     """
     def __init__(self,
-            model: EmbeddingTrainingHead,
-            args: argparse.ArgumentParser,
-            optimizers: Tuple[Optimizer, Scheduler],
-            viz: Viz = None
-        ) -> None:
+        model: EmbeddingTrainingHead,
+        args: argparse.ArgumentParser,
+        optimizers: Tuple[Optimizer, Scheduler],
+        viz: Viz = None
+    ) -> None:
         """Constructor
         """
         self.model = model.to(args.device)
