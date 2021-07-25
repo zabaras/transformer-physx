@@ -231,8 +231,8 @@ class CylinderViz(Viz):
         y_target: Tensor,
         plot_dir: str = None,
         epoch: int = None,
-        bidx: int = 0,
-        tidx: int = 0,
+        bidx: int = None,
+        tidx: int = None,
         pid: int = 0
     ) -> None:
         """Plots the predicted x-velocity, y-velocity and pressure field contours
@@ -242,13 +242,16 @@ class CylinderViz(Viz):
             y_target (Tensor): [B, T, 3, H, W] Target tensor.
             plot_dir (str, optional): Directory to save figure, overrides plot_dir one if provided. Defaults to None.
             epoch (int, optional): Current epoch, used for file name. Defaults to None.
-            bidx (int, optional): Batch index to plot. Defaults to 0.
+            bidx (int, optional): Batch index to plot. Defaults to None (plot random example in batch).
             tidx (int, optional): Timestep index to plot. Defaults to None (plot random time-step).
             pid (int, optional): Optional plotting id for indexing file name manually. Defaults to 0.
         """
+        print(y_pred.size())
         if plot_dir is None:
             plot_dir = self.plot_dir
         # Convert to numpy array
+        if bidx is None:
+            bidx = np.random.randint(0, y_pred.size(0))
         if tidx is None:
             tidx = np.random.randint(0, y_pred.size(1))
         y_pred = y_pred[bidx, tidx].detach().cpu().numpy()

@@ -33,8 +33,8 @@ class AutoViz():
         )
 
     @classmethod
-    def init_viz(cls, viz_name: str) -> Viz:
-        """Initializes visualization class.
+    def load_viz(cls, viz_name: str, *args, **kwargs) -> Viz:
+        """Loads built in visualization class.
         Currently supports: "lorenz", "cylinder", "grayscott"
 
         Args:
@@ -48,7 +48,8 @@ class AutoViz():
         """
         # First check if the model name is a pre-defined config
         if(viz_name in VIZ_MAPPING.keys()):
-            return VIZ_MAPPING[viz_name]
+            viz_class = VIZ_MAPPING[viz_name]
+            return viz_class(*args, **kwargs)
         else:
             err_str = "Provided viz name, {:s}, not found in existing visualization classes.".format(viz_name)
             raise KeyError(err_str)
