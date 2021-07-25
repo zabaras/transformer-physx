@@ -246,7 +246,7 @@ class CylinderViz(Viz):
             tidx (int, optional): Timestep index to plot. Defaults to None (plot random time-step).
             pid (int, optional): Optional plotting id for indexing file name manually. Defaults to 0.
         """
-        print(y_pred.size())
+
         if plot_dir is None:
             plot_dir = self.plot_dir
         # Convert to numpy array
