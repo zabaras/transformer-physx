@@ -15,7 +15,7 @@ Transformers for Modeling Physical Systems [ [ArXiV](https://arxiv.org/abs/2010.
 | | Embedding Model | Transformer |
 |---|:-------:|:-------:|
 | Lorenz | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/zabaras/transformer-physx/blob/main/examples/lorenz/train_lorenz_enn.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/zabaras/transformer-physx/blob/main/examples/lorenz/train_lorenz_transformer.ipynb) |
-| Cylinder Flow | - | - |
+| Cylinder Flow | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/zabaras/transformer-physx/blob/main/examples/cylinder/train_cylinder_enn.ipynb) | - |
 | Gray-Scott | - | - |
 | Rossler | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/zabaras/transformer-physx/blob/main/examples/rossler/train_rossler_enn.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/zabaras/transformer-physx/blob/main/examples/rossler/train_rossler_transformer.ipynb) |
 
