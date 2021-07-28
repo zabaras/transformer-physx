@@ -27,8 +27,8 @@ class EmbeddingParser(argparse.ArgumentParser):
         # data
         self.add_argument('--training_h5_file', type=str, default=None, help='file path to the training data hdf5 file')
         self.add_argument('--eval_h5_file', type=str, default=None, help='file path to the evaluation data hdf5 file')
-        self.add_argument('--ntrain', type=int, default=2048, help='number of training data')
-        self.add_argument('--ntest', type=int, default=16, help='number of testing data')
+        self.add_argument('--n_train', type=int, default=2048, help='number of training data')
+        self.add_argument('--n_eval', type=int, default=16, help='number of testing data')
         self.add_argument('--stride', type=int, default=16, help='number of time-steps as encoder input')
         self.add_argument('--block_size', type=int, default=64, help='number of time-steps as encoder input')
         self.add_argument('--batch_size', type=int, default=64, help='batch size for training')
@@ -76,10 +76,10 @@ class EmbeddingParser(argparse.ArgumentParser):
 
         if len(args.notes) > 0:
             args.run_dir = os.path.join(HOME, args.exp_dir, "embedding_{}".format(args.exp_name), 
-                    "ntrain{}_epochs{:d}_batch{:d}_{:s}".format(args.ntrain, args.epochs, args.batch_size, args.notes))
+                    "ntrain{}_epochs{:d}_batch{:d}_{:s}".format(args.n_train, args.epochs, args.batch_size, args.notes))
         else:
             args.run_dir = os.path.join(HOME, args.exp_dir, "embedding_{}".format(args.exp_name), 
-                    "ntrain{}_epochs{:d}_batch{:d}".format(args.ntrain, args.epochs, args.batch_size))
+                    "ntrain{}_epochs{:d}_batch{:d}".format(args.n_train, args.epochs, args.batch_size))
         args.ckpt_dir = os.path.join(args.run_dir,"checkpoints")
         args.plot_dir = os.path.join(args.run_dir, "predictions")
 

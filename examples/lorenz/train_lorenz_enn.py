@@ -28,7 +28,7 @@ if __name__ == '__main__':
     sys.argv = sys.argv + ["--eval_h5_file", "./data/lorenz_valid_rk.hdf5"]
     sys.argv = sys.argv + ["--batch_size", "512"]
     sys.argv = sys.argv + ["--block_size", "16"]
-    sys.argv = sys.argv + ["--ntrain", "2048"]
+    sys.argv = sys.argv + ["--n_train", "2048"]
 
     # Setup logging
     logging.basicConfig(
@@ -47,8 +47,8 @@ if __name__ == '__main__':
     data_handler = AutoDataHandler.load_data_handler(args.exp_name)
 
      # Set up data-loaders
-    training_loader = data_handler.createTrainingLoader(args.training_h5_file, block_size=args.block_size, stride=args.stride, ndata=args.ntrain, batch_size=args.batch_size)
-    testing_loader = data_handler.createTestingLoader(args.eval_h5_file, block_size=32, ndata=args.ntest, batch_size=8)
+    training_loader = data_handler.createTrainingLoader(args.training_h5_file, block_size=args.block_size, stride=args.stride, ndata=args.n_train, batch_size=args.batch_size)
+    testing_loader = data_handler.createTestingLoader(args.eval_h5_file, block_size=32, ndata=args.n_eval, batch_size=8)
 
     # Set up model
     model = AutoEmbeddingModel.init_trainer(args.exp_name, config).to(args.device)

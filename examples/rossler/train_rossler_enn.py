@@ -176,8 +176,8 @@ if __name__ == '__main__':
     sys.argv = sys.argv + ["--stride", "16"]
     sys.argv = sys.argv + ["--batch_size", "256"]
     sys.argv = sys.argv + ["--block_size", "16"]
-    sys.argv = sys.argv + ["--ntrain", "1024"]
-    sys.argv = sys.argv + ["--ntest", "8"]
+    sys.argv = sys.argv + ["--n_train", "1024"]
+    sys.argv = sys.argv + ["--n_eval", "8"]
 
     # Setup logging
     logging.basicConfig(
@@ -198,13 +198,13 @@ if __name__ == '__main__':
         args.training_h5_file, 
         block_size=args.block_size, 
         stride=args.stride, 
-        ndata=args.ntrain, 
+        ndata=args.n_train, 
         batch_size=args.batch_size)
 
     testing_loader = data_handler.createTestingLoader(
         args.eval_h5_file, 
         block_size=32, 
-        ndata=args.ntest, 
+        ndata=args.n_eval, 
         batch_size=8)
 
     # Load configuration file then init model

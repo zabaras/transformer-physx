@@ -50,7 +50,7 @@ class CylinderViz(Viz):
         epoch: int = None,
         pid: int = 0,
         nsteps: int = 10,
-        stride: int = 10
+        stride: int = 20
     ) -> None:
         """Plots the predicted x-velocity, y-velocity and pressure field contours
 
@@ -129,7 +129,7 @@ class CylinderViz(Viz):
         epoch: Optional[int] = None,
         pid: Optional[int] = 0,
         nsteps: int = 10,
-        stride: int = 5
+        stride: int = 10
     ) -> None:
         """Plots vorticity contours of flow around a cylinder at several time-steps. Vorticity gradients
         are calculated using standard smoothed central finite difference.

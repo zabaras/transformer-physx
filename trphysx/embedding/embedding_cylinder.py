@@ -94,7 +94,7 @@ class CylinderEmbedding(EmbeddingModel):
         # Off-diagonal indices
         xidx = []
         yidx = []
-        for i in range(1, 3):
+        for i in range(1, 5):
             yidx.append(np.arange(i, self.obsdim))
             xidx.append(np.arange(0, self.obsdim-i))
         self.xidx = torch.LongTensor(np.concatenate(xidx))
@@ -102,6 +102,7 @@ class CylinderEmbedding(EmbeddingModel):
 
         # The matrix here is a small NN since we need to make it dependent on the viscosity
         self.kMatrixUT = nn.Sequential(nn.Linear(1, 50), nn.ReLU(), nn.Linear(50, self.xidx.size(0)))
+        self.kMatrixLT = nn.Sequential(nn.Linear(1, 50), nn.ReLU(), nn.Linear(50, self.xidx.size(0)))
         # Normalization occurs inside the model
         self.register_buffer('mu', torch.tensor([0., 0., 0., 0.]))
         self.register_buffer('std', torch.tensor([1., 1., 1., 1.]))
@@ -182,7 +183,7 @@ class CylinderEmbedding(EmbeddingModel):
         kMatrix = Variable(torch.zeros(g.size(0), self.obsdim, self.obsdim)).to(self.devices[0])
         # Populate the off diagonal terms
         kMatrix[:,self.xidx, self.yidx] = self.kMatrixUT(100*visc)
-        kMatrix[:,self.yidx, self.xidx] = -self.kMatrixUT(100*visc)
+        kMatrix[:,self.yidx, self.xidx] = self.kMatrixLT(100*visc)
 
         # Populate the diagonal
         ind = np.diag_indices(kMatrix.shape[1])
@@ -258,7 +259,7 @@ class CylinderEmbeddingTrainer(EmbeddingTrainingHead):
 
         # Model forward for initial time-step
         g0, xRec0 = self.embedding_model(xin0, viscosity)
-        loss = (1e3)*mseLoss(xin0, xRec0)
+        loss = (1e1)*mseLoss(xin0, xRec0)
         loss_reconstruct = loss_reconstruct + mseLoss(xin0, xRec0).detach()
 
         g1_old = g0
@@ -271,8 +272,8 @@ class CylinderEmbeddingTrainer(EmbeddingTrainingHead):
             xgRec1 = self.embedding_model.recover(g1Pred)
 
             # Loss function
-            loss = loss + mseLoss(xgRec1, xin0) + (1e3)*mseLoss(xRec1, xin0) \
-                + (1e-1)*torch.sum(torch.pow(self.embedding_model.koopmanOperator, 2))
+            loss = loss + (1e1)*mseLoss(xgRec1, xin0) + (1e1)*mseLoss(xRec1, xin0) \
+                + (1e-2)*torch.sum(torch.pow(self.embedding_model.koopmanOperator, 2))
                 
             loss_reconstruct = loss_reconstruct + mseLoss(xRec1, xin0).detach()
             g1_old = g1Pred
