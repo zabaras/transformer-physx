@@ -4,7 +4,7 @@
 
 Transformer PhysX is a Python packaged modeled after the [Hugging Face repository](https://github.com/huggingface/transformers) designed for the use of transformers for modeling physical systems. Transformers have seen recent success in both natural language processing and vision fields but have yet to fully permute other machine learning areas. Originally proposed in [Transformers for Modeling Physical Systems](https://arxiv.org/abs/2010.03957), this projects goal is to make these deep learning advances including self-attention and Koopman embeddings more accessible for the scientific machine learning community.
 
-[Website](https://zabaras.github.io/transformer-physx/) | [Documentation](https://transformer-physx.readthedocs.io) |[Getting Started](https://transformer-physx.readthedocs.io/en/latest/install.html) (Coming Soon) | [Data]() (Coming Soon)
+[Website](https://zabaras.github.io/transformer-physx/) | [Documentation](https://transformer-physx.readthedocs.io) |[Getting Started](https://transformer-physx.readthedocs.io/en/latest/install.html) | [Data]() (Coming Soon)
 
 ### Associated Papers
 
