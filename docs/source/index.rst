@@ -14,6 +14,7 @@ Transformer-PhysX is an actively developed project for using transformer models 
    :caption: Getting Started:
 
    install
+   quickstart
 
 .. toctree::
    :maxdepth: 1

@@ -1,3 +1,5 @@
+__version__ = "0.0.7"
+
 __all__ = ['config', 'data_utils', 'embedding', 'transformer', 'utils', 'viz']
 
 from . import config

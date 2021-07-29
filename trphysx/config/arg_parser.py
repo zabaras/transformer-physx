@@ -8,15 +8,19 @@ github: https://github.com/zabaras/transformer-physx
 =====
 """
 import dataclasses
+from dataclasses import dataclass
 import sys
 from argparse import ArgumentParser
 from enum import Enum
 from pathlib import Path
-from typing import Any, Iterable, List, NewType, Optional, Tuple, Union
+from typing import Any, Iterable, List, Dict, Optional, Tuple, Union
+from typing_extensions import Protocol
 
 
-DataClass = NewType("DataClass", Any)
-DataClassType = NewType("DataClassType", Any)
+class DataClass(Protocol):
+    # checking for this attribute is currently
+    # the most reliable way to ascertain that something is a dataclass
+    __dataclass_fields__: Dict
 
 class HfArgumentParser(ArgumentParser):
     """
@@ -27,18 +31,18 @@ class HfArgumentParser(ArgumentParser):
 
     Code originally from the Huggingface Transformers repository:
     https://github.com/huggingface/transformers/blob/master/src/transformers/hf_argparser.py
+
+    Args:
+        dataclass_types (Union[DataClass, Iterable[DataClass]]):
+            Dataclass type, or list of dataclass types for which 
+            we will "fill" instances with the parsed args.
+        kwargs (optional): Passed to `argparse.ArgumentParser()` in the regular way.
     """
 
-    dataclass_types: Iterable[DataClassType]
+    dataclass_types: Iterable[DataClass]
 
-    def __init__(self, dataclass_types: Union[DataClassType, Iterable[DataClassType]], **kwargs):
-        """
-        
-        Args:
-            dataclass_types:
-                Dataclass type, or list of dataclass types for which we will "fill" instances with the parsed args.
-            kwargs:
-                (Optional) Passed to `argparse.ArgumentParser()` in the regular way.
+    def __init__(self, dataclass_types: Union[DataClass, Iterable[DataClass]], **kwargs):
+        """Constructor
         """
         super().__init__(**kwargs)
         if dataclasses.is_dataclass(dataclass_types):
@@ -47,7 +51,7 @@ class HfArgumentParser(ArgumentParser):
         for dtype in self.dataclass_types:
             self._add_dataclass_arguments(dtype)
 
-    def _add_dataclass_arguments(self, dtype: DataClassType):
+    def _add_dataclass_arguments(self, dtype: DataClass):
         for field in dataclasses.fields(dtype):
             field_name = f"--{field.name}"
             kwargs = field.metadata.copy()
@@ -97,25 +101,27 @@ class HfArgumentParser(ArgumentParser):
             self.add_argument(field_name, **kwargs)
 
     def parse_args_into_dataclasses(
-        self, args=None, return_remaining_strings=False, look_for_args_file=True, args_filename=None
-    ) -> Tuple[DataClass, ...]:
+        self, 
+        args: Iterable[str] = None, 
+        return_remaining_strings: bool = False, 
+        look_for_args_file: bool = True, 
+        args_filename: str = None
+    ) -> Tuple[DataClass]:
         """
         Parse command-line args into instances of the specified dataclass types.
-        This relies on argparse's `ArgumentParser.parse_known_args`. See the doc at:
-        docs.python.org/3.7/library/argparse.html#argparse.ArgumentParser.parse_args
 
         Args:
-            args:
+            args (Iterable[str]):
                 List of strings to parse. The default is taken from sys.argv. (same as argparse.ArgumentParser)
-            return_remaining_strings:
+            return_remaining_strings (bool):
                 If true, also return a list of remaining argument strings.
-            look_for_args_file:
+            look_for_args_file (bool):
                 If true, will look for a ".args" file with the same base name as the entry point script for this
                 process, and will append its potential content to the command line args.
-            args_filename:
+            args_filename (str):
                 If not None, will uses this file instead of the ".args" file specified in the previous argument.
         Returns:
-            Tuple consisting of:
+            (Tuple[DataClass]):
                 - the dataclass instances in the same order as they were passed to the initializer.abspath
                 - if applicable, an additional namespace for more (non-dataclass backed) arguments added to the parser
                   after initialization.
