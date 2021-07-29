@@ -21,7 +21,7 @@ class RosslerConfig(PhysConfig):
 
     def __init__(
         self,
-        n_ctx=64,
+        n_ctx=32,
         n_embd=32,
         n_layer=4,
         n_head=4, # n_head must be a factor of n_embd

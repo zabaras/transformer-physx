@@ -30,7 +30,7 @@ if __name__ == "__main__":
     sys.argv = sys.argv + ["--embedding_file_or_path", "./embedding_lorenz300.pth"]
     sys.argv = sys.argv + ["--training_h5_file","./data/lorenz_training_rk.hdf5"]
     sys.argv = sys.argv + ["--eval_h5_file","./data/lorenz_valid_rk.hdf5"]
-    sys.argv = sys.argv + ["--train_batch_size", "32"]
+    sys.argv = sys.argv + ["--train_batch_size", "16"]
     sys.argv = sys.argv + ["--stride", "64"]
     sys.argv = sys.argv + ["--n_train", "2048"]
     sys.argv = sys.argv + ["--save_steps", "25"]
