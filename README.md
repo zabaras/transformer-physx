@@ -25,7 +25,6 @@ This is an on going project, hence many parts are not fully developed and will b
 Thanks for understanding.
 
 - Set up data repository
-- Cylinder example working
 - Additional Unit Testing for Better Code Coverage
 - Parallel Data training for transformer
 - Unsupervised pretraining physics
