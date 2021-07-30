@@ -149,6 +149,7 @@ outputs/
 pretrained/
 gmsh/
 .idea/
+*.gz
 
 trphysx.egg-info/
 
