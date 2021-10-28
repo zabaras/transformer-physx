@@ -22,6 +22,7 @@ class DataClass(Protocol):
     # the most reliable way to ascertain that something is a dataclass
     __dataclass_fields__: Dict
 
+
 class HfArgumentParser(ArgumentParser):
     """
     This subclass of `argparse.ArgumentParser` uses type hints on dataclasses to generate arguments.
@@ -76,13 +77,14 @@ class HfArgumentParser(ArgumentParser):
                 kwargs["type"] = field.type
                 if field.default is not dataclasses.MISSING:
                     kwargs["default"] = field.default
-            elif field.type is bool or field.type is Optional[bool]:
+            elif field.type is bool:
                 if field.type is bool or (field.default is not None and field.default is not dataclasses.MISSING):
                     kwargs["action"] = "store_false" if field.default is True else "store_true"
                 if field.default is True:
                     field_name = f"--no_{field.name}"
                     kwargs["dest"] = field.name
-            elif hasattr(field.type, "__origin__") and issubclass(field.type.__origin__, List):
+            # Python 3.9 fix
+            elif hasattr(field.type, "__origin__") and "List" in str(field.type):
                 kwargs["nargs"] = "+"
                 kwargs["type"] = field.type.__args__[0]
                 assert all(
@@ -101,10 +103,10 @@ class HfArgumentParser(ArgumentParser):
             self.add_argument(field_name, **kwargs)
 
     def parse_args_into_dataclasses(
-        self, 
-        args: Iterable[str] = None, 
-        return_remaining_strings: bool = False, 
-        look_for_args_file: bool = True, 
+        self,
+        args: Iterable[str] = None,
+        return_remaining_strings: bool = False,
+        look_for_args_file: bool = True,
         args_filename: str = None
     ) -> Tuple[DataClass]:
         """
@@ -135,7 +137,8 @@ class HfArgumentParser(ArgumentParser):
 
             if args_file.exists():
                 fargs = args_file.read_text().split()
-                args = fargs + args if args is not None else fargs + sys.argv[1:]
+                args = fargs + \
+                    args if args is not None else fargs + sys.argv[1:]
                 # in case of duplicate arguments the first one has precedence
                 # so we append rather than prepend.
         namespace, remaining_args = self.parse_known_args(args=args)
@@ -154,6 +157,7 @@ class HfArgumentParser(ArgumentParser):
             return (*outputs, remaining_args)
         else:
             if remaining_args:
-                raise ValueError(f"Some specified arguments are not used by the HfArgumentParser: {remaining_args}")
+                raise ValueError(
+                    f"Some specified arguments are not used by the HfArgumentParser: {remaining_args}")
 
             return (*outputs,)

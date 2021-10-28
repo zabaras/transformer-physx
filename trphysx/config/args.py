@@ -22,25 +22,25 @@ class ModelArguments:
     """
     Arguments pertaining to which model/config/tokenizer we are going to fine-tune, or train from scratch.
     """
-    init_name: Optional[str] = field(
+    init_name: str = field(
         default='lorenz', metadata={"help": "Used as a global default initialization token for different experiments."}
     )
-    model_name: Optional[str] = field(
+    model_name: str = field(
         default=None, metadata={"help": "The name model of the transformer model"},
     )
-    config_name: Optional[str] = field(
+    config_name: str = field(
         default=None, metadata={"help": "Pretrained config name or path if not the same as model_name"}
     )
-    embedding_name: Optional[str] = field(
+    embedding_name: str = field(
         default=None, metadata={"help": "Pretrained embedding model name"}
     )
-    embedding_file_or_path: Optional[str] = field(
+    embedding_file_or_path: str = field(
         default=None, metadata={"help": "Pretrained embedding model path"}
     )
-    transformer_file_or_path: Optional[str] = field(
+    transformer_file_or_path: str = field(
         default=None, metadata={"help": "Pretrained transformer model path"}
     )
-    viz_name: Optional[str] = field(
+    viz_name: str = field(
         default=None, metadata={"help": "Visualization class name"}
     )
 
@@ -49,25 +49,25 @@ class DataArguments:
     """
     Arguments pertaining to training and evaluation data.
     """
-    n_train: Optional[int] = field(
+    n_train: int = field(
         default=2048, metadata={"help": "Number of training time-series to use"}
     )
-    n_eval: Optional[int] = field(
+    n_eval: int = field(
         default=256, metadata={"help": "Number of evaluation time-series to use"}
     )
-    stride: Optional[int] = field(
+    stride: int = field(
         default=32, metadata={"help": " Stride to segment the training data at"}
     )
-    training_h5_file: Optional[str] = field(
+    training_h5_file: str = field(
         default=None, metadata={"help": "File path to the training data hdf5 file"}
     )
-    eval_h5_file: Optional[str] = field(
+    eval_h5_file: str = field(
         default=None, metadata={"help": "File path to the evaluation data hdf5 file"}
     )
     overwrite_cache: bool = field(
         default=False, metadata={"help": "Overwrite the cached training and evaluation sets"}
     )
-    cache_path:Optional[str] = field(
+    cache_path:str= field(
         default=None, metadata={"help": "File directory to write cache file to"}
     )
 
@@ -85,65 +85,65 @@ class TrainingArguments:
         },
     )
     # Training paths for logging, checkpoints etc.
-    exp_dir: Optional[str] = field(
+    exp_dir: str = field(
         default=None, metadata={"help": "Directory to store data related to the experiment"}
     )
-    ckpt_dir: Optional[str] = field(
+    ckpt_dir: str = field(
         default=None, metadata={"help": "Directory to save model checkpoints during training"}
     )
-    plot_dir: Optional[str] = field(
+    plot_dir: str = field(
         default=None, metadata={"help": "Directory to save plots during training"}
     )
-    save_steps: Optional[int] = field(
+    save_steps: int = field(
         default=25, metadata={"help": "Epoch stride to save checkpoints"}
     )
-    eval_steps: Optional[int] = field(
+    eval_steps: int = field(
         default=25, metadata={"help": "Epoch stride to evaluate validation data-set"}
     )
-    plot_max: Optional[int] = field(
+    plot_max: int = field(
         default=3, metadata={"help": "Max number of eval cases to plot"}
     )
 
-    epoch_start: Optional[int] = field(
+    epoch_start: int = field(
         default=0, metadata={"help": "Epoch to start training at"}
     )
-    epochs: Optional[int] = field(
+    epochs: int = field(
         default=200, metadata={"help": "Number of epochs to train"}
     )
 
     # ===== Optimization parameters =====
-    lr: Optional[float] = field(
+    lr: float = field(
         default=0.001, metadata={"help": "Learning rate"}
     )
-    max_grad_norm: Optional[float] = field(
+    max_grad_norm: float = field(
         default=0.1, metadata={"help": "Norm limit for clipping gradients"}
     )
     dataloader_drop_last: bool = field(
         default=True, metadata={"help": "Drop training cases no in a full mini-batch"}
     )
-    gradient_accumulation_steps: Optional[int] = field(
+    gradient_accumulation_steps: int = field(
         default=int(1), metadata={"help": "How many mini-batches to compute before updating weights"}
     )
 
     # ===== Data loader parameters =====
-    train_batch_size: Optional[int] = field(
+    train_batch_size: int = field(
         default=256, metadata={"help": "Number of training cases in mini-batch"}
     )
-    eval_batch_size: Optional[int] = field(
+    eval_batch_size: int = field(
         default=16, metadata={"help": "Number of evaluation cases in mini-batch"}
     )
 
     # ===== Parallel parameters =====
-    local_rank: Optional[int] = field(
+    local_rank: int = field(
         default=-1, metadata={"help": "Local rank of the CPU process, -1 means just use a single CPU"}
     )
-    n_gpu: Optional[int] = field(
+    n_gpu: int = field(
         default=1, metadata={"help": "Number of GPUs per CPU"}
     )
-    seed: Optional[int] = field(
+    seed: int = field(
         default=12345, metadata={"help": "Random seed for reproducibility"}
     )
-    notes: Optional[str] = field(
+    notes: str = field(
         default=None, metadata={"help": "Notes that will be appended to experiment folder"}
     )
 

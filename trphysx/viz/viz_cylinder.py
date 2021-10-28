@@ -125,9 +125,9 @@ class CylinderViz(Viz):
     def plotPredictionVorticity(self,
         y_pred: torch.Tensor,
         y_target: torch.Tensor,
-        plot_dir: Optional[str] = None,
-        epoch: Optional[int] = None,
-        pid: Optional[int] = 0,
+        plot_dir: str = None,
+        epoch: int = None,
+        pid: int = 0,
         nsteps: int = 10,
         stride: int = 10
     ) -> None:
