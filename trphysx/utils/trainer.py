@@ -95,7 +95,7 @@ class Trainer:
 
         Args:
             train_dataset (Dataset, optional): Optional training dataset. If none is provided,
-            the class training data will be used. Defaults to None.
+                the class training data will be used. Defaults to None.
 
         Raises:
             ValueError: If both the dataset parameter and class dataset have not been provided
@@ -129,7 +129,7 @@ class Trainer:
 
         Args:
             eval_dataset (Dataset, optional): Optional eval dataset. If none is provided,
-            the class eval data will be used. Defaults to None.
+                the class eval data will be used. Defaults to None.
 
         Raises:
             ValueError: If both the dataset parameter and class dataset have not been provided
