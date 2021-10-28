@@ -1,6 +1,8 @@
 """
 A setuptools based setup module.
 
+Install locally with pip install -e .
+
 To build wheel file:
 python setup.py bdist_wheel
 To add source tar zip
@@ -93,6 +95,7 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9'
     ],
 
     # This field adds keywords

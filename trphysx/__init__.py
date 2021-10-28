@@ -1,4 +1,4 @@
-__version__ = "0.0.7"
+__version__ = "0.0.8"
 
 __all__ = ['config', 'data_utils', 'embedding', 'transformer', 'utils', 'viz']
 
