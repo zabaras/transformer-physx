@@ -67,7 +67,7 @@ class Trainer:
         self.train_dataset = train_dataset
         self.eval_dataset = eval_dataset
         self.optimizers = optimizers
-        self.log_metrics = Metrics(file_name = os.path.join(self.args.exp_dir, "log_metrics.h5"))
+        self.log_metrics = Metrics(file_path = self.args.exp_dir, file_name = "log_metrics.h5")
         self.embedding_model = embedding_model
         self.viz = viz
 
@@ -236,11 +236,9 @@ class Trainer:
                 self.model.save_model(self.args.ckpt_dir, epoch=epoch)
                 torch.save(optimizer.state_dict(), os.path.join(self.args.ckpt_dir, "optimizer{:d}.pt".format(epoch)))
                 torch.save(lr_scheduler.state_dict(), os.path.join(self.args.ckpt_dir, "scheduler{:d}.pt".format(epoch)))
+                # Save log file
+                self.log_metrics.writeToHDF5()
 
-        # If starting from beginning delete log file
-        if self.args.epoch_start == 0:
-            self.log_metrics.delHDF5()
-        self.log_metrics.writeToHDF5(os.path.join(self.args.exp_dir, "log_metrics.h5"))
 
 
     def training_step(
