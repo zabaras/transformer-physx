@@ -72,7 +72,7 @@ class Metrics:
 
         with h5py.File(file_name, "w") as f:
             for attr, value in self.__dict__.items():
-                if attr == 'file_name':
+                if isinstance(value, str): # Skip file_name and file_path attrib
                     continue
                 # Check if data-set is already in h5file
                 if f.__contains__(attr):
