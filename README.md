@@ -4,11 +4,11 @@
 
 Transformer PhysX is a Python packaged modeled after the [Hugging Face repository](https://github.com/huggingface/transformers) designed for the use of transformers for modeling physical systems. Transformers have seen recent success in both natural language processing and vision fields but have yet to fully permute other machine learning areas. Originally proposed in [Transformers for Modeling Physical Systems](https://arxiv.org/abs/2010.03957), this projects goal is to make these deep learning advances including self-attention and Koopman embeddings more accessible for the scientific machine learning community.
 
-[Website](https://zabaras.github.io/transformer-physx/) | [Documentation](https://transformer-physx.readthedocs.io) |[Getting Started](https://transformer-physx.readthedocs.io/en/latest/install.html) | [Data](https://www.doi.org/10.5281/zenodo.5148523)
+[Documentation](https://transformer-physx.readthedocs.io) | [Getting Started](https://transformer-physx.readthedocs.io/en/latest/install.html) | [Data](https://www.doi.org/10.5281/zenodo.5148523)
 
 ### Associated Papers
 
-Transformers for Modeling Physical Systems [ [ArXiV](https://arxiv.org/abs/2010.03957) ]
+Transformers for Modeling Physical Systems [ [ArXiV](https://arxiv.org/abs/2010.03957) ] [ [Nerual Networks](https://www.sciencedirect.com/science/article/abs/pii/S0893608021004500) ]
 
 ### Colab Quick Start
 
@@ -18,17 +18,6 @@ Transformers for Modeling Physical Systems [ [ArXiV](https://arxiv.org/abs/2010.
 | Cylinder Flow | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/zabaras/transformer-physx/blob/main/examples/cylinder/train_cylinder_enn.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/zabaras/transformer-physx/blob/main/examples/cylinder/train_cylinder_transformer.ipynb) |
 | Gray-Scott | - | - |
 | Rossler | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/zabaras/transformer-physx/blob/main/examples/rossler/train_rossler_enn.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/zabaras/transformer-physx/blob/main/examples/rossler/train_rossler_transformer.ipynb) |
-
-### Road Map
-
-This is an on going project, hence many parts are not fully developed and will be added in the near future. If you have any particular questions or features you are interested in, please make a issue request so it can be prioritized!
-Thanks for understanding.
-
-- Tutorials/ blog post to help with introduction
-- Info on each example system in docs
-- Additional Unit Testing for Better Code Coverage
-- Parallel Data training for transformer
-- Unsupervised pretraining physics
 
 ### Additional Resources
 
@@ -44,10 +33,15 @@ Open an issue on the Github repository if you have any questions/concerns.
 Find this useful or like this work? Cite us with:
 
 ```latex
-@article{geneva2020transformers,
-    title={Transformers for Modeling Physical Systems},
-    author={Geneva, Nicholas and Zabaras, Nicholas},
-    journal={arXiv preprint arXiv:2010.03957},
-    year={2020}
+@article{geneva2022transformers,
+    title = {Transformers for modeling physical systems},
+    author = {Nicholas Geneva and Nicholas Zabaras},
+    journal = {Neural Networks},
+    volume = {146},
+    pages = {272-289},
+    year = {2022},
+    issn = {0893-6080},
+    doi = {10.1016/j.neunet.2021.11.022},
+    url = {https://www.sciencedirect.com/science/article/pii/S0893608021004500}
 }
 ```
