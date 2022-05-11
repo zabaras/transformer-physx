@@ -8,7 +8,7 @@ Transformer PhysX is a Python packaged modeled after the [Hugging Face repositor
 
 ### Associated Papers
 
-Transformers for Modeling Physical Systems [ [ArXiV](https://arxiv.org/abs/2010.03957) ] [ [Nerual Networks](https://www.sciencedirect.com/science/article/abs/pii/S0893608021004500) ]
+Transformers for Modeling Physical Systems [ [ArXiV](https://arxiv.org/abs/2010.03957) ] [ [Neural Networks](https://www.sciencedirect.com/science/article/abs/pii/S0893608021004500) ]
 
 ### Colab Quick Start
 
