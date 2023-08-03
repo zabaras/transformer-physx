@@ -52,7 +52,7 @@ class HfArgumentParser(ArgumentParser):
         for dtype in self.dataclass_types:
             self._add_dataclass_arguments(dtype)
 
-    def _add_dataclass_arguments(self, dtype: DataClass):
+    def _add_dataclass_arguments(self, dtype: DataClassType):
         for field in dataclasses.fields(dtype):
             field_name = f"--{field.name}"
             kwargs = field.metadata.copy()
