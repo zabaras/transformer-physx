@@ -51,13 +51,16 @@ class HfArgumentParser(ArgumentParser):
         self.dataclass_types = dataclass_types
         for dtype in self.dataclass_types:
             self._add_dataclass_arguments(dtype)
-
+        
+        
     def _add_dataclass_arguments(self, dtype: DataClassType):
         for field in dataclasses.fields(dtype):
             field_name = f"--{field.name}"
             kwargs = field.metadata.copy()
             # field.metadata is not used at all by Data Classes,
             # it is provided as a third-party extension mechanism.
+            origin_type = getattr(field.type, "__origin__", field.type)
+        
             if isinstance(field.type, str):
                 raise ImportError(
                     "This implementation is not compatible with Postponed Evaluation of Annotations (PEP 563),"
@@ -92,6 +95,14 @@ class HfArgumentParser(ArgumentParser):
                 ), "{} cannot be a List of mixed types".format(field.name)
                 if field.default_factory is not dataclasses.MISSING:
                     kwargs["default"] = field.default_factory()
+            # Python 3.10 fix
+            elif isclass(origin_type) and issubclass(origin_type, list):
+                kwargs["type"] = field.type.__args__[0]
+                kwargs["nargs"] = "+"
+                if field.default_factory is not dataclasses.MISSING:
+                    kwargs["default"] = field.default_factory()
+                elif field.default is dataclasses.MISSING:
+                    kwargs["required"] = True
             else:
                 kwargs["type"] = field.type
                 if field.default is not dataclasses.MISSING:
