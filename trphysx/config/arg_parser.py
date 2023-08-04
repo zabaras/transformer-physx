@@ -1,17 +1,12 @@
-# Copyright 2020 The HuggingFace Team. All rights reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
+"""
+=====
+Distributed by: Notre Dame SCAI Lab (MIT Liscense)
+- Associated publication:
+url: https://arxiv.org/abs/2010.03957
+doi: 
+github: https://github.com/zabaras/transformer-physx
+=====
+"""
 import dataclasses
 import json
 import sys
@@ -113,8 +108,13 @@ class HfArgumentParser(ArgumentParser):
     The class is designed to play well with the native argparse. In particular, you can add more (non-dataclass backed)
     arguments to the parser after initialization and you'll get the output back after parsing as an additional
     namespace. Optional: To create sub argument groups use the `_argument_group_name` attribute in the dataclass.
-    """
 
+    Code copied from the Huggingface Transformers repository on 04/08/23,
+    https://github.com/huggingface/transformers/blob/master/src/transformers/hf_argparser.py 
+    version v4.31.0 commit hash 2642d8d04b14c18199ebe7b35f976da02df61752
+
+    """
+    
     dataclass_types: Iterable[DataClassType]
 
     def __init__(self, dataclass_types: Union[DataClassType, Iterable[DataClassType]], **kwargs):
