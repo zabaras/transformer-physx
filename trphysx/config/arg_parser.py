@@ -13,6 +13,7 @@ import sys
 from argparse import ArgumentParser
 from enum import Enum
 from pathlib import Path
+from inspect import isclass
 from typing import Any, Iterable, List, Dict, Optional, Tuple, Union
 from typing_extensions import Protocol
 
